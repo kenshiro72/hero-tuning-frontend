@@ -2,15 +2,89 @@
   margin: 30px 0;
 }
 
+.costume-selector-header {
+  margin-bottom: 20px;
+}
+
 .costume-selector h2 {
   color: #333;
-  margin-bottom: 20px;
+  margin: 0 0 15px 0;
   font-size: 1.8rem;
+}
+
+.search-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.costume-search-input {
+  width: 100%;
+  padding: 10px 15px;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: border-color 0.2s;
+}
+
+.costume-search-input:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+}
+
+.role-filters {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.role-select {
+  flex: 1;
+  min-width: 200px;
+  padding: 10px 15px;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  background-color: white;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.role-select:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+}
+
+.role-select:hover {
+  border-color: #999;
+}
+
+.no-results {
+  text-align: center;
+  padding: 40px;
+  color: #999;
+  font-size: 1.1rem;
+  font-style: italic;
+}
+
+.costume-group {
+  margin-bottom: 30px;
+}
+
+.costume-group-title {
+  color: #333;
+  margin-bottom: 10px;
+  font-size: 1.2rem;
+  font-weight: bold;
+  padding-left: 10px;
+  border-left: 4px solid #007bff;
 }
 
 .costume-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(165px, 1fr));
   gap: 15px;
   max-height: 500px;
   overflow-y: auto;
@@ -21,10 +95,23 @@
   background: white;
   border: 3px solid;
   border-radius: 10px;
-  padding: 15px;
+  padding: 10px;
   cursor: pointer;
   transition: all 0.2s;
   position: relative;
+  min-height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.costume-card.rainbow-border {
+  border: 3px solid transparent;
+  background-image:
+    linear-gradient(white, white),
+    linear-gradient(90deg, #ffb3ba, #ffdfba, #ffffba, #baffc9, #bae1ff, #e0bbff);
+  background-origin: border-box;
+  background-clip: padding-box, border-box;
 }
 
 .costume-card:hover {
@@ -39,20 +126,28 @@
 
 .costume-rarity {
   position: absolute;
-  top: 10px;
-  right: 10px;
+  top: 5px;
+  right: 5px;
   color: white;
-  padding: 5px 10px;
-  border-radius: 5px;
+  padding: 2px 4px;
+  border-radius: 4px;
   font-weight: bold;
-  font-size: 0.9rem;
+  font-size: 0.75rem;
+  line-height: 1;
+  text-shadow: 0 0 3px rgba(0, 0, 0, 0.8);
+}
+
+.costume-card.rainbow-border .costume-rarity {
+  color: #333;
+  text-shadow: 0 0 2px rgba(255, 255, 255, 0.8);
 }
 
 .costume-card h3 {
-  margin: 0 0 10px 0;
-  font-size: 1rem;
+  margin: 0;
+  font-size: 0.9rem;
   color: #333;
-  padding-right: 50px;
+  text-align: center;
+  padding-right: 30px;
 }
 
 .costume-stars {
@@ -65,4 +160,20 @@
   color: #666;
   font-size: 0.9rem;
   margin-top: 5px;
+}
+
+.special-slot-indicators {
+  position: absolute;
+  bottom: 5px;
+  right: 5px;
+  display: flex;
+  gap: 4px;
+}
+
+.special-slot-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }

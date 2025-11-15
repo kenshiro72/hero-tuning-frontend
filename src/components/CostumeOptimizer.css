@@ -1,0 +1,384 @@
+.costume-optimizer {
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  padding: 20px;
+  margin: 20px 0;
+}
+
+.optimizer-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.optimizer-header h2 {
+  margin: 0;
+  color: #333;
+  font-size: 1.8rem;
+}
+
+.close-optimizer-button {
+  padding: 8px 16px;
+  background-color: #6c757d;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.close-optimizer-button:hover {
+  background-color: #5a6268;
+}
+
+.optimizer-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.special-skill-selection h3 {
+  margin: 0 0 15px 0;
+  color: #555;
+  font-size: 1.2rem;
+}
+
+.special-skill-dropdowns {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 15px;
+}
+
+.dropdown-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.dropdown-group label {
+  font-weight: bold;
+  color: #555;
+  font-size: 0.95rem;
+}
+
+.special-skill-dropdown {
+  width: 100%;
+  padding: 12px 15px;
+  font-size: 15px;
+  font-weight: 500;
+  border: 2px solid #ddd;
+  border-radius: 6px;
+  background-color: white;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.special-skill-dropdown:hover:not(:disabled) {
+  border-color: #007bff;
+  background-color: #f8f9fa;
+}
+
+.special-skill-dropdown:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background-color: #f0f0f0;
+}
+
+.normal-skill-selection h3 {
+  margin: 0 0 15px 0;
+  color: #555;
+  font-size: 1.2rem;
+}
+
+.skill-checkboxes {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 10px;
+  max-height: 400px;
+  overflow-y: auto;
+  padding: 15px;
+  background-color: white;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+}
+
+.skill-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+  background-color: #f8f9fa;
+}
+
+.skill-checkbox-label:hover {
+  background-color: #e7f3ff;
+}
+
+.skill-checkbox-label input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+
+.skill-checkbox-label span {
+  font-size: 14px;
+  color: #333;
+  font-weight: 500;
+}
+
+
+.optimize-button {
+  padding: 15px 30px;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 18px;
+  font-weight: bold;
+  transition: all 0.2s;
+  align-self: center;
+}
+
+.optimize-button:hover:not(:disabled) {
+  background-color: #218838;
+  transform: scale(1.05);
+}
+
+.optimize-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.optimization-results h3 {
+  margin: 0 0 10px 0;
+  color: #333;
+  font-size: 1.5rem;
+}
+
+.search-summary {
+  margin: 0 0 20px 0;
+}
+
+.preset-info {
+  margin: 0 0 10px 0;
+  color: #666;
+  font-size: 1rem;
+}
+
+.results-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.result-card {
+  background: white;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  padding: 20px;
+  transition: all 0.2s;
+}
+
+.result-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.result-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.result-rank {
+  background-color: #007bff;
+  color: white;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-weight: bold;
+  font-size: 1.1rem;
+}
+
+.result-header h4 {
+  margin: 0;
+  flex: 1;
+  font-size: 1.3rem;
+  color: #333;
+}
+
+.result-rarity {
+  background-color: #ffc107;
+  color: #333;
+  padding: 4px 12px;
+  border-radius: 4px;
+  font-weight: bold;
+}
+
+.result-preset-effects {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 8px;
+  margin: 15px 0;
+}
+
+.preset-effect-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background-color: #e7f3ff;
+  border-radius: 4px;
+  font-size: 0.95rem;
+  border: 1px solid #b3d9ff;
+}
+
+.result-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.detail-button {
+  padding: 10px 20px;
+  background-color: #6c757d;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: bold;
+  transition: all 0.2s;
+  flex: 1;
+}
+
+.detail-button:hover:not(:disabled) {
+  background-color: #5a6268;
+}
+
+.result-details {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 2px solid #eee;
+}
+
+.result-details h5 {
+  margin: 15px 0 10px 0;
+  color: #555;
+  font-size: 1.1rem;
+  font-weight: bold;
+}
+
+.optimizer-slots-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin: 15px 0;
+}
+
+.optimizer-slots-column {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.optimizer-slot-group h6 {
+  margin: 0 0 8px 0;
+  color: #555;
+  font-size: 0.95rem;
+  font-weight: bold;
+}
+
+.optimizer-slots-vertical {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.optimizer-slot-card {
+  background: white;
+  border: 2px solid #007bff;
+  border-radius: 6px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.slot-number-label {
+  font-size: 0.8rem;
+  color: #666;
+  font-weight: bold;
+}
+
+.memory-name-label {
+  font-size: 0.9rem;
+  color: #333;
+  font-weight: 600;
+}
+
+.skill-label {
+  font-size: 0.85rem;
+  color: #666;
+  line-height: 1.3;
+}
+
+.all-effects {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 8px;
+  margin-bottom: 15px;
+}
+
+.effect-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 10px;
+  background-color: #e7f3ff;
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+
+.skill-name {
+  color: #333;
+  font-weight: 500;
+}
+
+.skill-value {
+  color: #007bff;
+  font-weight: bold;
+}
+
+.apply-button {
+  padding: 10px 20px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: bold;
+  transition: all 0.2s;
+  flex: 2;
+}
+
+.apply-button:hover:not(:disabled) {
+  background-color: #0056b3;
+}
+
+.apply-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.no-results {
+  text-align: center;
+  padding: 40px;
+  color: #999;
+  font-size: 1.1rem;
+  font-style: italic;
+}
