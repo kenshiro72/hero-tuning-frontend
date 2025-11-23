@@ -13,6 +13,7 @@ function CharacterDetail() {
   const [selectedCostume, setSelectedCostume] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [activeTab, setActiveTab] = useState('easy-tuning'); // 'easy-tuning' or 'manual-selection'
   const slotDisplayRef = useRef(null);
 
   const fetchCharacter = useCallback(async (isMounted) => {
@@ -77,6 +78,9 @@ function CharacterDetail() {
         };
         setSelectedCostume(costumeWithCharacter);
 
+        // タブを手動選択に切り替え
+        setActiveTab('manual-selection');
+
         // スロット情報部分にスクロール
         setTimeout(() => {
           if (slotDisplayRef.current) {
@@ -134,36 +138,63 @@ function CharacterDetail() {
         <h1>{character.name}</h1>
       </div>
 
-      <CostumeOptimizer
-        character={character}
-        onConfigurationApplied={handleConfigurationApplied}
-      />
+      {/* タブヘッダー */}
+      <div className="tab-container">
+        <div className="tab-header">
+          <button
+            className={`tab-button ${activeTab === 'easy-tuning' ? 'active' : ''}`}
+            onClick={() => setActiveTab('easy-tuning')}
+          >
+            お手軽チューニング
+          </button>
+          <button
+            className={`tab-button ${activeTab === 'manual-selection' ? 'active' : ''}`}
+            onClick={() => setActiveTab('manual-selection')}
+          >
+            手動でコスチューム選択
+          </button>
+        </div>
 
-      <CostumeSelector
-        costumes={character.costumes}
-        selectedCostume={selectedCostume}
-        onSelectCostume={(costume) => {
-          // コスチュームにcharacter情報を追加
-          const costumeWithCharacter = {
-            ...costume,
-            character: character
-          };
-          setSelectedCostume(costumeWithCharacter);
+        {/* タブコンテンツ */}
+        <div className="tab-content">
+          {activeTab === 'easy-tuning' && (
+            <CostumeOptimizer
+              character={character}
+              onConfigurationApplied={handleConfigurationApplied}
+            />
+          )}
 
-          // スロット情報部分にスクロール
-          setTimeout(() => {
-            if (slotDisplayRef.current) {
-              slotDisplayRef.current.scrollIntoView({
-                behavior: 'smooth',
-                block: 'start'
-              });
-            }
-          }, 100);
-        }}
-      />
+          {activeTab === 'manual-selection' && (
+            <>
+              <CostumeSelector
+                costumes={character.costumes}
+                selectedCostume={selectedCostume}
+                onSelectCostume={(costume) => {
+                  // コスチュームにcharacter情報を追加
+                  const costumeWithCharacter = {
+                    ...costume,
+                    character: character
+                  };
+                  setSelectedCostume(costumeWithCharacter);
 
-      <div ref={slotDisplayRef}>
-        {selectedCostume && <SlotDisplay costume={selectedCostume} />}
+                  // スロット情報部分にスクロール
+                  setTimeout(() => {
+                    if (slotDisplayRef.current) {
+                      slotDisplayRef.current.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                      });
+                    }
+                  }, 100);
+                }}
+              />
+
+              <div ref={slotDisplayRef}>
+                {selectedCostume && <SlotDisplay costume={selectedCostume} />}
+              </div>
+            </>
+          )}
+        </div>
       </div>
     </div>
   );

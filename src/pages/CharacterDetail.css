@@ -108,6 +108,78 @@
   flex: 1;
 }
 
+/* タブコンテナ */
+.tab-container {
+  background: white;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+  margin-bottom: var(--spacing-3xl);
+}
+
+/* タブヘッダー */
+.tab-header {
+  display: flex;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border-bottom: 3px solid #dee2e6;
+  padding: 0;
+}
+
+.tab-button {
+  flex: 1;
+  padding: var(--spacing-xl) var(--spacing-2xl);
+  background: transparent;
+  border: none;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-base);
+  position: relative;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -3px;
+}
+
+.tab-button:hover {
+  background: rgba(255, 255, 255, 0.5);
+  color: var(--color-primary);
+}
+
+.tab-button.active {
+  background: white;
+  color: var(--color-primary);
+  border-bottom-color: var(--color-primary);
+  font-weight: var(--font-weight-bold);
+}
+
+.tab-button.active::after {
+  content: '';
+  position: absolute;
+  bottom: -3px;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--color-primary);
+}
+
+/* タブコンテンツ */
+.tab-content {
+  padding: var(--spacing-2xl);
+  background: white;
+  min-height: 400px;
+}
+
+/* タブコンテンツ内のコンポーネント調整 */
+.tab-content .costume-optimizer {
+  margin: 0;
+  background: transparent;
+  padding: 0;
+}
+
+.tab-content .costume-selector {
+  margin: 0;
+}
+
 .character-stats {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -247,6 +319,15 @@
     padding: var(--spacing-sm) var(--spacing-lg);
     font-size: var(--font-size-sm);
   }
+
+  .tab-button {
+    padding: var(--spacing-md) var(--spacing-lg);
+    font-size: var(--font-size-base);
+  }
+
+  .tab-content {
+    padding: var(--spacing-lg);
+  }
 }
 
 @media (max-width: 480px) {
@@ -281,6 +362,15 @@
 
   .stat-value {
     font-size: var(--font-size-xl);
+  }
+
+  .tab-button {
+    padding: var(--spacing-sm) var(--spacing-md);
+    font-size: var(--font-size-sm);
+  }
+
+  .tab-content {
+    padding: var(--spacing-md);
   }
 }
 
