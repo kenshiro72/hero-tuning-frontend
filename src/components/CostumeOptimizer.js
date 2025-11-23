@@ -160,10 +160,6 @@ function CostumeOptimizer({ character, onConfigurationApplied }) {
   };
 
   const handleApplyConfiguration = async (result) => {
-    if (!window.confirm(`${result.costume_name}にこの構成を適用しますか？\n現在の装備は全て解除されます。`)) {
-      return;
-    }
-
     setLoading(true);
     try {
       // configuration を { slot_id: memory_id } の形式に変換
@@ -173,7 +169,6 @@ function CostumeOptimizer({ character, onConfigurationApplied }) {
       });
 
       await costumesApi.applyConfiguration(result.costume_id, configuration);
-      alert('構成を適用しました！');
 
       // 親コンポーネントに通知
       if (onConfigurationApplied) {
@@ -185,6 +180,18 @@ function CostumeOptimizer({ character, onConfigurationApplied }) {
     } finally {
       setLoading(false);
     }
+  };
+
+  // キャラクター画像のパスを取得
+  const getCharacterImage = (characterName) => {
+    const baseName = characterName.split('（')[0];
+    return `/images/characters/${baseName}.JPG`;
+  };
+
+  // スキルを分割
+  const getTuningSkills = (item) => {
+    if (!item.skill) return [];
+    return item.skill.split('、').map(s => s.trim());
   };
 
   // スロット構成を表示する関数（SlotDisplayと同じ見た目）
@@ -207,23 +214,53 @@ function CostumeOptimizer({ character, onConfigurationApplied }) {
     );
 
     const renderSlot = (item) => {
-      // Roleを取得するためにメモリーの情報が必要
-      // ここではslot_roleを追加で渡す必要がある
       const borderColor = item.role ? getRoleColor(item.role) : '#007bff';
+      const skills = getTuningSkills(item);
+      const isSpecial = item.slot_type === 'Special';
+      const characterName = item.character_name || item.memory_name || '不明';
 
       return (
         <div
           key={item.slot_id}
-          className="optimizer-slot-card"
+          className={`optimizer-slot-card ${isSpecial ? 'special' : ''}`}
           style={{ borderColor: borderColor }}
         >
-          <div className="slot-number-label">
-            {item.slot_type === 'Normal'
-              ? `Slot ${item.slot_number}`
-              : `Special ${item.slot_number - 10}`}
+          {item.slot_class && (
+            <span className={`class-badge ${item.slot_class.toLowerCase()}`}>
+              {item.slot_class === 'HERO' ? 'H' : 'V'}
+            </span>
+          )}
+          <div className="slot-content">
+            <div className="equipped-memory">
+              <div className="memory-character-avatar">
+                <img
+                  src={getCharacterImage(characterName)}
+                  alt={characterName}
+                  className="memory-character-image"
+                  onError={(e) => {
+                    e.target.style.display = 'none';
+                    e.target.nextSibling.style.display = 'flex';
+                  }}
+                />
+                <div className="memory-character-initial" style={{ display: 'none' }}>
+                  {characterName.charAt(0)}
+                </div>
+              </div>
+              <div className="memory-skills">
+                {skills.length > 0 ? (
+                  skills.map((skill, index) => (
+                    <div key={index} className="skill-row">
+                      {skill}
+                    </div>
+                  ))
+                ) : (
+                  <div className="skill-row">
+                    {item.skill || 'スキル情報なし'}
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
-          <div className="memory-name-label">{item.memory_name}</div>
-          <div className="skill-label">{item.skill}</div>
         </div>
       );
     };
@@ -238,7 +275,7 @@ function CostumeOptimizer({ character, onConfigurationApplied }) {
             </div>
           )}
           <div className="optimizer-slot-group">
-            <h6>Normal Slots 1-5</h6>
+            <h6>Normal 1-5</h6>
             <div className="optimizer-slots-vertical">
               {normalSlots1to5.map(renderSlot)}
             </div>
@@ -253,7 +290,7 @@ function CostumeOptimizer({ character, onConfigurationApplied }) {
             </div>
           )}
           <div className="optimizer-slot-group">
-            <h6>Normal Slots 6-10</h6>
+            <h6>Normal 6-10</h6>
             <div className="optimizer-slots-vertical">
               {normalSlots6to10.map(renderSlot)}
             </div>
@@ -267,14 +304,6 @@ function CostumeOptimizer({ character, onConfigurationApplied }) {
     <div className="costume-optimizer">
       <div className="optimizer-header">
         <h2>お手軽チューニング検索</h2>
-        {showResults && (
-          <button
-            className="close-optimizer-button"
-            onClick={() => setShowResults(false)}
-          >
-            選択画面に戻る
-          </button>
-        )}
       </div>
 
       {!showResults ? (
@@ -284,7 +313,6 @@ function CostumeOptimizer({ character, onConfigurationApplied }) {
             <h3>発動させたいスペシャルチューニングを選択</h3>
             <div className="special-skill-dropdowns">
               <div className="dropdown-group">
-                <label>スペシャル1:</label>
                 <select
                   className="special-skill-dropdown"
                   value={specialSlot1Skill}
@@ -296,7 +324,7 @@ function CostumeOptimizer({ character, onConfigurationApplied }) {
                   }}
                   disabled={loading}
                 >
-                  <option value="">選択してください</option>
+                  <option value="">special1</option>
                   {specialSkills.map((skill) => (
                     <option key={skill} value={skill}>
                       {skill}
@@ -306,7 +334,6 @@ function CostumeOptimizer({ character, onConfigurationApplied }) {
               </div>
 
               <div className="dropdown-group">
-                <label>スペシャル2:</label>
                 <select
                   className="special-skill-dropdown"
                   value={specialSlot2Skill}
@@ -318,7 +345,7 @@ function CostumeOptimizer({ character, onConfigurationApplied }) {
                   }}
                   disabled={loading}
                 >
-                  <option value="">選択してください</option>
+                  <option value="">special2</option>
                   {specialSkills.map((skill) => (
                     <option key={skill} value={skill}>
                       {skill}
@@ -328,7 +355,6 @@ function CostumeOptimizer({ character, onConfigurationApplied }) {
               </div>
 
               <div className="dropdown-group">
-                <label>スペシャル1or2:</label>
                 <select
                   className="special-skill-dropdown"
                   value={specialSlotEitherSkill}
@@ -341,7 +367,7 @@ function CostumeOptimizer({ character, onConfigurationApplied }) {
                   }}
                   disabled={loading}
                 >
-                  <option value="">選択してください</option>
+                  <option value="">special1or2</option>
                   {specialSkills.map((skill) => (
                     <option key={skill} value={skill}>
                       {skill}
@@ -354,7 +380,7 @@ function CostumeOptimizer({ character, onConfigurationApplied }) {
 
           {/* ノーマルスキル選択 */}
           <div className="normal-skill-selection">
-            <h3>強くしたいチューニングスキルを選択（複数選択可）</h3>
+            <h3>特化させたいチューニングスキルを選択（複数可）</h3>
             <div className="skill-checkboxes">
               {allSkills.map((skill) => (
                 <label key={skill} className="skill-checkbox-label">
@@ -380,7 +406,15 @@ function CostumeOptimizer({ character, onConfigurationApplied }) {
         </div>
       ) : (
         <div className="optimization-results">
-          <h3>検索結果（トップ5）</h3>
+          <div className="results-header">
+            <h3>検索結果</h3>
+            <button
+              className="close-optimizer-button"
+              onClick={() => setShowResults(false)}
+            >
+              戻る
+            </button>
+          </div>
           <div className="search-summary">
             {(specialSlot1Skill || specialSlot2Skill || specialSlotEitherSkill) && (
               <p className="preset-info">
@@ -402,7 +436,6 @@ function CostumeOptimizer({ character, onConfigurationApplied }) {
                 return (
                   <div key={index} className="result-card">
                     <div className="result-header">
-                      <span className="result-rank">#{index + 1}</span>
                       <h4>{result.costume_name}</h4>
                       <span className="result-rarity">{result.rarity}</span>
                     </div>
@@ -428,14 +461,14 @@ function CostumeOptimizer({ character, onConfigurationApplied }) {
                         className="detail-button"
                         onClick={() => toggleResultDetail(index)}
                       >
-                        {isExpanded ? '詳細を閉じる' : '詳細'}
+                        {isExpanded ? '閉じる' : '詳細'}
                       </button>
                       <button
                         className="apply-button"
                         onClick={() => handleApplyConfiguration(result)}
                         disabled={loading}
                       >
-                        この構成を適用
+                        カスタマイズ
                       </button>
                     </div>
 

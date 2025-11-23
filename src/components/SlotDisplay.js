@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { slotsApi, costumesApi } from '../api/client';
 import MemorySelector from './MemorySelector';
 import { getRoleColor } from '../utils/roleColors';
@@ -10,68 +10,7 @@ function SlotDisplay({ costume: initialCostume }) {
   const [effects, setEffects] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  // 親コンポーネントからcostumeが変更されたときに内部状態を更新
-  useEffect(() => {
-    const initializeCostume = async () => {
-      if (!initialCostume) return;
-
-      setCostume(initialCostume);
-      setEffects(null); // 効果表示もリセット
-
-      // ノーマルスロットを最大レベルに設定
-      if (initialCostume?.slots) {
-        const normalSlots = initialCostume.slots.filter(slot => slot.slot_type === 'Normal');
-        let needsRefresh = false;
-
-        for (const slot of normalSlots) {
-          if (slot.current_level < slot.max_level) {
-            needsRefresh = true;
-            try {
-              // 最大レベルまでレベルアップ
-              const levelDiff = slot.max_level - slot.current_level;
-              for (let i = 0; i < levelDiff; i++) {
-                await slotsApi.levelUp(slot.id);
-              }
-            } catch (error) {
-              console.error('Failed to level up slot:', error);
-            }
-          }
-        }
-
-        // スロット情報を更新（新しいコスチュームIDを指定）
-        if (needsRefresh) {
-          await refreshCostume(initialCostume.id);
-        }
-
-        // メモリーが装備されている場合、自動的に効果を表示
-        const hasEquippedMemories = initialCostume.slots.some(slot => slot.equipped_memory);
-        if (hasEquippedMemories) {
-          // 少し待ってから効果を読み込む（レベル調整が完了するのを待つ）
-          setTimeout(async () => {
-            try {
-              const response = await costumesApi.getEffects(initialCostume.id);
-              setEffects(response.data);
-            } catch (error) {
-              console.error('Failed to load effects:', error);
-            }
-          }, 500);
-        }
-      }
-    };
-
-    initializeCostume();
-  }, [initialCostume]);
-
-  const getClassBadge = (slotClass) => {
-    if (!slotClass) return null;
-    return (
-      <span className={`class-badge ${slotClass.toLowerCase()}`}>
-        {slotClass === 'HERO' ? 'H' : 'V'}
-      </span>
-    );
-  };
-
-  const refreshCostume = async (costumeId = null) => {
+  const refreshCostume = useCallback(async (costumeId = null) => {
     try {
       const targetId = costumeId || costume.id;
       const response = await costumesApi.getById(targetId);
@@ -81,6 +20,87 @@ function SlotDisplay({ costume: initialCostume }) {
       console.error('Failed to refresh costume:', error);
       alert('コスチューム情報の更新に失敗しました');
     }
+  }, [costume.id]);
+
+  // 親コンポーネントからcostumeが変更されたときに内部状態を更新
+  useEffect(() => {
+    let isMounted = true; // クリーンアップ用フラグ
+
+    const initializeCostume = async () => {
+      if (!initialCostume || !isMounted) return;
+
+      setCostume(initialCostume);
+      setEffects(null); // 効果表示もリセット
+
+      // ノーマルスロットを最大レベルに設定
+      if (initialCostume?.slots) {
+        const normalSlots = initialCostume.slots.filter(slot => slot.slot_type === 'Normal');
+        let needsRefresh = false;
+
+        // 並列処理でパフォーマンス向上: Promise.allを使用
+        const levelUpPromises = normalSlots
+          .filter(slot => slot.current_level < slot.max_level)
+          .map(async (slot) => {
+            try {
+              // 一度のAPI呼び出しで最大レベルに設定（パフォーマンス最適化）
+              await slotsApi.setLevel(slot.id, slot.max_level);
+              return true;
+            } catch (error) {
+              console.error('Failed to set slot level:', error);
+              return false;
+            }
+          });
+
+        if (levelUpPromises.length > 0) {
+          needsRefresh = true;
+          await Promise.all(levelUpPromises);
+        }
+
+        // スロット情報を更新（新しいコスチュームIDを指定）
+        if (needsRefresh && isMounted) {
+          await refreshCostume(initialCostume.id);
+        }
+
+        // メモリーが装備されている場合、自動的に効果を表示
+        const hasEquippedMemories = initialCostume.slots.some(slot => slot.equipped_memory);
+        if (hasEquippedMemories && isMounted) {
+          // 少し待ってから効果を読み込む（レベル調整が完了するのを待つ）
+          const timeoutId = setTimeout(async () => {
+            if (!isMounted) return; // タイムアウト後もマウント状態を確認
+
+            try {
+              const response = await costumesApi.getEffects(initialCostume.id);
+              if (isMounted) {
+                setEffects(response.data);
+              }
+            } catch (error) {
+              console.error('Failed to load effects:', error);
+            }
+          }, 500);
+
+          // タイムアウトをクリーンアップ用に保存
+          return () => {
+            clearTimeout(timeoutId);
+          };
+        }
+      }
+    };
+
+    initializeCostume();
+
+    // クリーンアップ関数: コンポーネントのアンマウント時に実行
+    return () => {
+      isMounted = false;
+    };
+  }, [initialCostume, refreshCostume]);
+
+  const getClassBadge = (slotClass) => {
+    if (!slotClass) return null;
+    return (
+      <span className={`class-badge ${slotClass.toLowerCase()}`}>
+        {slotClass === 'HERO' ? 'H' : 'V'}
+      </span>
+    );
   };
 
   const handleEquipMemory = async (memory) => {
@@ -119,34 +139,6 @@ function SlotDisplay({ costume: initialCostume }) {
     }
   };
 
-  const handleLevelChange = async (slot, newLevel) => {
-    const currentLevel = slot.current_level;
-    if (newLevel === currentLevel) return;
-
-    setLoading(true);
-    try {
-      const levelDiff = newLevel - currentLevel;
-      if (levelDiff > 0) {
-        // レベルアップ
-        for (let i = 0; i < levelDiff; i++) {
-          await slotsApi.levelUp(slot.id);
-        }
-      } else {
-        // レベルダウン
-        for (let i = 0; i < Math.abs(levelDiff); i++) {
-          await slotsApi.levelDown(slot.id);
-        }
-      }
-      await refreshCostume();
-      await loadEffects(); // 自動的に効果を再計算
-    } catch (error) {
-      console.error('Failed to change level:', error);
-      alert('レベル変更に失敗しました');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const loadEffects = async () => {
     try {
       const response = await costumesApi.getEffects(costume.id);
@@ -158,11 +150,6 @@ function SlotDisplay({ costume: initialCostume }) {
   };
 
   const handleUnequipAll = async () => {
-    // 確認ダイアログを表示
-    if (!window.confirm('全てのメモリーを解除しますか？\nこの操作は取り消せません。')) {
-      return;
-    }
-
     setLoading(true);
     try {
       await costumesApi.unequipAll(costume.id);
@@ -193,76 +180,78 @@ function SlotDisplay({ costume: initialCostume }) {
   const specialSlot2 = specialSlots.find(slot => slot.slot_number === 12);
   const normalSlots6to10 = normalSlots.filter(slot => slot.slot_number >= 6 && slot.slot_number <= 10);
 
-  const renderSlotCard = (slot) => (
-    <div
-      key={slot.id}
-      className={`slot-card ${slot.equipped_memory ? 'equipped' : 'empty'} ${
-        slot.slot_type === 'Special' ? 'special' : ''
-      } clickable`}
-      style={{ borderColor: getRoleColor(slot.role) }}
-      onClick={() => !loading && setSelectedSlot(slot)}
-    >
-      <div className="slot-info-left">
-        <div className="slot-header">
-          <span className="slot-number">
-            {slot.slot_type === 'Normal'
-              ? `Slot ${slot.slot_number}`
-              : `Special ${slot.slot_number - 10}`}
-          </span>
-          {getClassBadge(slot.slot_class)}
-        </div>
-        <div
-          className="slot-role"
-          style={{ backgroundColor: getRoleColor(slot.role) }}
-        >
-          {slot.role}
+  const renderSlotCard = (slot) => {
+    // チューニングスキルを「、」で分割
+    const getTuningSkills = () => {
+      if (!slot.equipped_memory) return [];
+      const skillText = slot.slot_type === 'Normal'
+        ? slot.equipped_memory.tuning_skill
+        : slot.equipped_memory.special_tuning_skill;
+      return skillText.split('、').map(s => s.trim());
+    };
+
+    const skills = getTuningSkills();
+    const roleColor = getRoleColor(slot.role);
+    // メモリー選択と同じ背景色を適用（Specialスロットも含む）
+    const backgroundColor = `${roleColor}15`;
+
+    return (
+      <div
+        key={slot.id}
+        className={`slot-card ${slot.equipped_memory ? 'equipped' : 'empty'} ${
+          slot.slot_type === 'Special' ? 'special' : ''
+        } clickable`}
+        style={{
+          borderColor: roleColor,
+          backgroundColor: backgroundColor
+        }}
+        onClick={() => !loading && setSelectedSlot(slot)}
+      >
+        {getClassBadge(slot.slot_class)}
+
+        <div className="slot-content">
+          {slot.equipped_memory ? (
+            <div className="equipped-memory">
+              <div className="memory-character-avatar">
+                <img
+                  src={getCharacterImage(slot.equipped_memory.character.name)}
+                  alt={slot.equipped_memory.character.name}
+                  className="memory-character-image"
+                  onError={(e) => {
+                    e.target.style.display = 'none';
+                    e.target.nextSibling.style.display = 'flex';
+                  }}
+                />
+                <div className="memory-character-initial" style={{ display: 'none' }}>
+                  {slot.equipped_memory.character.name.charAt(0)}
+                </div>
+              </div>
+              <div className="memory-skills">
+                {skills.map((skill, index) => (
+                  <div key={index} className="skill-row">
+                    {skill}
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div className="empty-slot-message">クリック</div>
+          )}
         </div>
       </div>
+    );
+  };
 
-      <div className="slot-content">
-        {slot.equipped_memory ? (
-          <div className="equipped-memory">
-            <div className="memory-character-name">
-              {slot.equipped_memory.character.name}
-            </div>
-            <div className="memory-tuning">
-              {slot.slot_type === 'Normal' ? (
-                <>{slot.equipped_memory.tuning_skill}</>
-              ) : (
-                <>{slot.equipped_memory.special_tuning_skill}</>
-              )}
-            </div>
-          </div>
-        ) : (
-          <div className="empty-slot-message">
-            クリックして装備
-          </div>
-        )}
-      </div>
-
-      {slot.slot_type === 'Normal' && (
-        <div className="slot-level-dropdown" onClick={(e) => e.stopPropagation()}>
-          <select
-            value={slot.current_level}
-            onChange={(e) => handleLevelChange(slot, parseInt(e.target.value))}
-            disabled={loading}
-            className="level-select"
-          >
-            {Array.from({ length: slot.max_level }, (_, i) => i + 1).map((level) => (
-              <option key={level} value={level}>
-                Lv.{level}
-              </option>
-            ))}
-          </select>
-        </div>
-      )}
-    </div>
-  );
+  // キャラクター画像のパスを取得
+  const getCharacterImage = (characterName) => {
+    const baseName = characterName.split('（')[0];
+    return `/images/characters/${baseName}.JPG`;
+  };
 
   return (
     <div className="slot-display">
       <div className="slot-display-header">
-        <h2>{costume.name} - スロット情報</h2>
+        <h2>{costume.name}</h2>
         <button
           className="unequip-all-button"
           onClick={handleUnequipAll}
@@ -308,7 +297,7 @@ function SlotDisplay({ costume: initialCostume }) {
         <div className="effects-display">
           <h3>チューニング効果</h3>
           {Object.keys(effects.tuning_effects).length > 0 ? (
-            <div className="effects-list">
+            <div className="all-effects">
               {(() => {
                 // CSVの順番でソート
                 const skillOrder = [
@@ -330,10 +319,9 @@ function SlotDisplay({ costume: initialCostume }) {
                 });
 
                 return sortedEffects.map(([skill, data]) => (
-                  <div key={skill} className="effect-item">
-                    <span className="effect-name">{skill}</span>
-                    <span className="effect-value">{data.value}</span>
-                    <span className="effect-description">{data.description}</span>
+                  <div key={skill} className="effect-row">
+                    <span className="skill-name">{skill}:</span>
+                    <span className="skill-value">{data.value}</span>
                   </div>
                 ));
               })()}
@@ -342,18 +330,10 @@ function SlotDisplay({ costume: initialCostume }) {
             <p>装備されているメモリーがありません</p>
           )}
 
-          {effects.special_skills.length > 0 && (
-            <>
-              <h4>スペシャルチューニングスキル</h4>
-              <div className="special-skills-list">
-                {effects.special_skills.map((skill, index) => (
-                  <div key={index} className="special-skill-item">
-                    {skill}
-                  </div>
-                ))}
-              </div>
-            </>
-          )}
+          <div className="effects-notice">
+            <p>※ 各スロットが最大レベルの時の数値です。</p>
+            <p>※ 誤差が生じる場合があります。</p>
+          </div>
         </div>
       )}
 

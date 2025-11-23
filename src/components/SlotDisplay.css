@@ -65,14 +65,37 @@
 .slots-container {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 30px;
-  margin-top: 20px;
+  gap: var(--spacing-xl);
+  margin-top: var(--spacing-xl);
 }
 
+/* 2x2レイアウトを全画面サイズで適用 */
 .slots-column {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
+  display: contents;
+}
+
+.slots-column:first-child .slot-group:first-child {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.slots-column:last-child .slot-group:first-child {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.slots-column:first-child .slot-group:last-child {
+  grid-column: 1;
+  grid-row: 2;
+}
+
+.slots-column:last-child .slot-group:last-child {
+  grid-column: 2;
+  grid-row: 2;
+}
+
+.slot-group {
+  min-width: 0;
 }
 
 .slot-group h4 {
@@ -86,6 +109,7 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
+  min-width: 0;
 }
 
 .slots-grid {
@@ -95,17 +119,19 @@
 }
 
 .slot-card {
-  background: white;
   border: 3px solid;
   border-radius: 8px;
-  padding: 12px;
+  padding: 15px;
   transition: all 0.2s;
-  display: grid;
-  grid-template-columns: 100px 1fr auto;
-  gap: 12px;
+  display: flex;
   align-items: center;
-  min-height: 70px;
+  justify-content: center;
+  min-height: 90px;
+  max-height: 90px;
+  width: 100%;
+  max-width: 100%;
   position: relative;
+  overflow: hidden;
 }
 
 .slot-card.clickable {
@@ -118,7 +144,6 @@
 }
 
 .slot-card.special {
-  background: linear-gradient(135deg, #fff9e6 0%, #ffffff 100%);
   box-shadow: 0 0 10px rgba(255, 193, 7, 0.3);
 }
 
@@ -127,47 +152,30 @@
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
 }
 
-.slot-info-left {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.slot-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.slot-number {
-  font-size: 0.85rem;
-  color: #666;
-  font-weight: bold;
-}
-
 .slot-content {
   flex: 1;
   display: flex;
   align-items: center;
-}
-
-.slot-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  align-items: flex-end;
+  width: 100%;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .class-badge {
-  width: 18px;
-  height: 18px;
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.7rem;
+  font-size: 0.85rem;
   font-weight: bold;
   color: white;
+  z-index: 2;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .class-badge.hero {
@@ -176,22 +184,6 @@
 
 .class-badge.villain {
   background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
-}
-
-.slot-role {
-  color: white;
-  padding: 4px 8px;
-  border-radius: 4px;
-  text-align: center;
-  font-weight: bold;
-  font-size: 0.85rem;
-}
-
-.slot-level {
-  text-align: center;
-  color: #666;
-  font-size: 0.85rem;
-  margin-top: 5px;
 }
 
 /* 効果表示 */
@@ -207,74 +199,78 @@
   color: #333;
 }
 
-.effects-list {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.effect-item {
-  background-color: white;
-  padding: 12px;
-  border-radius: 4px;
+.all-effects {
   display: grid;
-  grid-template-columns: 1fr auto 2fr;
-  gap: 12px;
-  align-items: center;
-}
-
-.effect-name {
-  font-weight: bold;
-  color: #333;
-}
-
-.effect-value {
-  font-size: 18px;
-  font-weight: bold;
-  color: #007bff;
-}
-
-.effect-description {
-  color: #666;
-  font-size: 14px;
-}
-
-.special-skills-list {
-  display: flex;
-  flex-wrap: wrap;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
   gap: 8px;
-  margin-top: 12px;
+  margin-bottom: 15px;
 }
 
-.special-skill-item {
-  background-color: #6f42c1;
-  color: white;
-  padding: 8px 16px;
-  border-radius: 16px;
-  font-size: 14px;
+.effect-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 10px;
+  background-color: #e7f3ff;
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+
+.skill-name {
+  color: #333;
+  font-weight: 500;
+}
+
+.skill-value {
+  color: #007bff;
+  font-weight: bold;
 }
 
 /* メモリー装備 */
-.slot-card.equipped {
-  background-color: #f8fff9;
+.equipped-memory {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  width: 100%;
+  min-width: 0;
+  overflow: hidden;
 }
 
-.equipped-memory {
+.memory-skills {
   display: flex;
   flex-direction: column;
   gap: 4px;
+  flex: 1 1 0;
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: #ccc transparent;
 }
 
-.memory-character-name {
-  font-weight: bold;
-  color: #333;
+.memory-skills::-webkit-scrollbar {
+  height: 4px;
+}
+
+.memory-skills::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.memory-skills::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 2px;
+}
+
+.memory-skills::-webkit-scrollbar-thumb:hover {
+  background: #999;
+}
+
+.skill-row {
   font-size: 0.95rem;
-}
-
-.memory-tuning {
-  font-size: 0.85rem;
-  color: #666;
+  color: #333;
+  font-weight: 600;
   line-height: 1.4;
+  white-space: nowrap;
 }
 
 .unequip-button {
@@ -358,9 +354,11 @@
 /* 空のスロットメッセージ */
 .empty-slot-message {
   color: #999;
-  font-size: 0.9rem;
-  font-style: italic;
-  text-align: left;
+  font-size: 1rem;
+  font-weight: 600;
+  text-align: center;
+  width: 100%;
+  letter-spacing: 0.5px;
 }
 
 /* レベルドロップダウン */
@@ -391,3 +389,337 @@
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+/* レスポンシブ対応 */
+
+/* タブレット横向き (1024px-1280px) */
+@media (max-width: 1280px) and (min-width: 1024px) {
+  .slot-card {
+    min-height: 85px;
+    max-height: 85px;
+    padding: 12px;
+  }
+
+  .memory-character-image,
+  .memory-character-initial {
+    width: 50px;
+    height: 50px;
+  }
+
+  .memory-character-initial {
+    font-size: 1.3rem;
+  }
+
+  .skill-row {
+    font-size: 0.9rem;
+  }
+
+  .class-badge {
+    width: 22px;
+    height: 22px;
+    font-size: 0.8rem;
+  }
+}
+
+/* タブレット縦向き (768px-1023px) */
+@media (max-width: 1023px) and (min-width: 768px) {
+  .slots-container {
+    gap: var(--spacing-lg);
+  }
+
+  .slot-card {
+    min-height: 80px;
+    max-height: 80px;
+    padding: 12px;
+  }
+
+  .memory-character-image,
+  .memory-character-initial {
+    width: 45px;
+    height: 45px;
+  }
+
+  .memory-character-initial {
+    font-size: 1.2rem;
+  }
+
+  .skill-row {
+    font-size: 0.85rem;
+  }
+
+  .class-badge {
+    width: 20px;
+    height: 20px;
+    font-size: 0.75rem;
+  }
+
+  .slot-group h4 {
+    font-size: 1rem;
+  }
+
+  .all-effects {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  }
+}
+
+/* 大きめのスマホ / 小さいタブレット (481px-767px) */
+@media (max-width: 767px) and (min-width: 481px) {
+  .slot-card {
+    min-height: 75px;
+    max-height: 75px;
+    padding: 10px;
+  }
+
+  .memory-character-image,
+  .memory-character-initial {
+    width: 40px;
+    height: 40px;
+  }
+
+  .memory-character-initial {
+    font-size: 1.1rem;
+  }
+
+  .skill-row {
+    font-size: 0.8rem;
+  }
+
+  .class-badge {
+    width: 18px;
+    height: 18px;
+    font-size: 0.7rem;
+  }
+
+  .slot-group h4 {
+    font-size: 0.95rem;
+  }
+
+  .all-effects {
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  }
+
+  .slot-display-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-md);
+  }
+
+  .effects-button,
+  .unequip-all-button {
+    width: 100%;
+  }
+}
+
+/* 通常のスマホ縦向き (768px以下) - 既存のルール維持 */
+@media (max-width: 768px) {
+  .slot-display-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-md);
+  }
+
+  .effects-button,
+  .unequip-all-button {
+    width: 100%;
+  }
+}
+
+/* スマホ横向き専用 */
+@media (max-height: 500px) and (orientation: landscape) {
+  .slot-card {
+    min-height: 65px;
+    max-height: 65px;
+    padding: 8px;
+  }
+
+  .memory-character-image,
+  .memory-character-initial {
+    width: 35px;
+    height: 35px;
+  }
+
+  .memory-character-initial {
+    font-size: 1rem;
+  }
+
+  .skill-row {
+    font-size: 0.75rem;
+  }
+
+  .class-badge {
+    width: 16px;
+    height: 16px;
+    font-size: 0.65rem;
+    top: 5px;
+    right: 5px;
+  }
+
+  .slot-group h4 {
+    font-size: 0.85rem;
+    margin-bottom: 8px;
+  }
+
+  .slots-container {
+    gap: var(--spacing-md);
+  }
+
+  .slot-display-header h2 {
+    font-size: 1.3rem;
+  }
+
+  .effects-display {
+    padding: 15px;
+  }
+
+  .all-effects {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 6px;
+  }
+
+  .effect-row {
+    padding: 4px 8px;
+    font-size: 0.75rem;
+  }
+}
+
+/* ホバーエフェクトの強化 */
+.slot-card {
+  transition: all var(--transition-base);
+}
+
+.slot-card.clickable:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-hover-md);
+}
+
+.unequip-button,
+.effects-button {
+  transition: all var(--transition-base);
+}
+
+.unequip-button:hover:not(:disabled),
+.effects-button:hover {
+  transform: scale(1.05);
+}
+
+.level-button {
+  transition: all var(--transition-fast);
+}
+
+.level-button:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+/* チューニング効果の注意書き */
+.effects-notice {
+  margin-top: var(--spacing-xl);
+  padding: var(--spacing-md);
+  background-color: var(--color-warning-bg);
+  border-left: 4px solid var(--color-warning);
+  border-radius: var(--radius-sm);
+}
+
+.effects-notice p {
+  margin: var(--spacing-xs) 0;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  line-height: var(--line-height-relaxed);
+}
+
+/* iPhone用レイアウト (480px以下) */
+@media (max-width: 480px) {
+  .slots-container {
+    gap: var(--spacing-md);
+  }
+
+  .slot-group h4 {
+    font-size: var(--font-size-sm);
+    margin-bottom: var(--spacing-sm);
+  }
+
+  .slot-card {
+    padding: var(--spacing-sm);
+    min-height: 70px;
+    max-height: 70px;
+  }
+
+  .skill-row {
+    font-size: 0.7rem;
+  }
+
+  .class-badge {
+    width: 16px;
+    height: 16px;
+    font-size: 0.65rem;
+    top: 6px;
+    right: 6px;
+  }
+
+  .effects-notice p {
+    font-size: 0.7rem;
+  }
+
+  .empty-slot-message {
+    font-size: 0.75rem;
+  }
+
+  .memory-character-image,
+  .memory-character-initial {
+    width: 32px;
+    height: 32px;
+  }
+
+  .memory-character-initial {
+    font-size: var(--font-size-base);
+  }
+
+  .equipped-memory {
+    gap: var(--spacing-xs);
+  }
+}
+
+/* メモリーキャラクター画像 - レスポンシブサイズ */
+.memory-character-avatar {
+  flex-shrink: 0;
+}
+
+.memory-character-image {
+  width: 55px;
+  height: 55px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid rgba(255, 255, 255, 0.9);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.25);
+  background: white;
+  transition: all var(--transition-base);
+}
+
+.slot-card:hover .memory-character-image {
+  border-color: rgba(255, 255, 255, 1);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.memory-character-initial {
+  width: 55px;
+  height: 55px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  font-weight: var(--font-weight-bold);
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+  border: 3px solid rgba(255, 255, 255, 0.9);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.25);
+  color: white;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+  transition: all var(--transition-base);
+}
+
+.slot-card:hover .memory-character-initial {
+  border-color: rgba(255, 255, 255, 1);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+
+/* iPhone用の調整 - 既存の@media (max-width: 480px)にマージ済み */

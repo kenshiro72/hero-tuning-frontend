@@ -121,21 +121,20 @@
 .memory-card {
   border: 2px solid #ddd;
   border-radius: 8px;
-  padding: 16px;
+  padding: 12px;
   cursor: pointer;
   transition: all 0.2s;
-}
-
-.memory-card.compatible {
-  border-color: #28a745;
-  background-color: #f8fff9;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 70px;
+  max-height: 70px;
 }
 
 .memory-card.compatible:hover {
-  border-color: #20893a;
-  background-color: #e6f9ea;
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  filter: brightness(0.95);
 }
 
 .memory-card.incompatible {
@@ -145,48 +144,275 @@
   cursor: not-allowed;
 }
 
-.memory-name {
-  font-size: 18px;
-  font-weight: bold;
-  margin-bottom: 8px;
+.memory-character-avatar {
+  flex-shrink: 0;
 }
 
-.memory-info {
+.memory-character-image {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid rgba(255, 255, 255, 0.8);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  background: white;
+}
+
+.memory-character-initial {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
   display: flex;
-  gap: 8px;
-  margin-bottom: 12px;
-}
-
-.memory-role,
-.memory-class {
-  padding: 4px 12px;
-  border-radius: 12px;
-  font-size: 12px;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
   font-weight: bold;
-}
-
-.memory-role {
-  background-color: #007bff;
+  background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+  border: 2px solid rgba(255, 255, 255, 0.8);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   color: white;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
 }
 
-.memory-class {
-  background-color: #6c757d;
-  color: white;
+.memory-skills-container {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: #ccc transparent;
 }
 
-.memory-skills {
-  font-size: 14px;
-  line-height: 1.6;
+.memory-skills-container::-webkit-scrollbar {
+  height: 4px;
 }
 
-.tuning-skill,
-.special-skill {
-  margin-bottom: 4px;
+.memory-skills-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.memory-skills-container::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 2px;
+}
+
+.memory-skills-container::-webkit-scrollbar-thumb:hover {
+  background: #999;
+}
+
+.memory-skill-row {
+  font-size: 0.9rem;
+  color: #333;
+  font-weight: 500;
+  line-height: 1.3;
+  white-space: nowrap;
 }
 
 .incompatible-reason {
   color: #dc3545;
-  font-size: 14px;
-  margin-top: 8px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* レスポンシブ対応 */
+
+/* タブレット横向き (1024px-1280px) */
+@media (max-width: 1280px) and (min-width: 1024px) {
+  .modal-content {
+    max-width: 700px;
+  }
+
+  .memory-card {
+    min-height: 65px;
+    max-height: 65px;
+  }
+
+  .memory-character-image,
+  .memory-character-initial {
+    width: 42px;
+    height: 42px;
+  }
+
+  .memory-character-initial {
+    font-size: 1.15rem;
+  }
+
+  .memory-skill-row {
+    font-size: 0.85rem;
+  }
+}
+
+/* タブレット縦向き (768px-1023px) */
+@media (max-width: 1023px) and (min-width: 768px) {
+  .modal-content {
+    max-width: 600px;
+    width: 85%;
+  }
+
+  .memory-card {
+    min-height: 65px;
+    max-height: 65px;
+    padding: 10px;
+  }
+
+  .memory-character-image,
+  .memory-character-initial {
+    width: 40px;
+    height: 40px;
+  }
+
+  .memory-character-initial {
+    font-size: 1.1rem;
+  }
+
+  .memory-skill-row {
+    font-size: 0.85rem;
+  }
+}
+
+/* 大きめのスマホ / 小さいタブレット (481px-767px) */
+@media (max-width: 767px) and (min-width: 481px) {
+  .modal-content {
+    width: 92%;
+    padding: 20px;
+  }
+
+  .memory-card {
+    min-height: 60px;
+    max-height: 60px;
+    padding: 10px;
+    gap: 10px;
+  }
+
+  .memory-character-image,
+  .memory-character-initial {
+    width: 38px;
+    height: 38px;
+  }
+
+  .memory-character-initial {
+    font-size: 1rem;
+  }
+
+  .memory-skill-row {
+    font-size: 0.8rem;
+  }
+
+  .modal-header h3 {
+    font-size: 20px;
+  }
+
+  .close-button {
+    font-size: 28px;
+    width: 36px;
+    height: 36px;
+  }
+}
+
+/* 小さいスマホ (480px以下) */
+@media (max-width: 480px) {
+  .modal-content {
+    width: 95%;
+    padding: 16px;
+  }
+
+  .memory-card {
+    min-height: 55px;
+    max-height: 55px;
+    padding: 8px;
+    gap: 8px;
+  }
+
+  .memory-character-image,
+  .memory-character-initial {
+    width: 32px;
+    height: 32px;
+  }
+
+  .memory-character-initial {
+    font-size: 0.9rem;
+  }
+
+  .memory-skill-row {
+    font-size: 0.75rem;
+  }
+
+  .modal-header h3 {
+    font-size: 18px;
+  }
+
+  .close-button {
+    font-size: 24px;
+    width: 32px;
+    height: 32px;
+  }
+
+  .memory-class-header {
+    font-size: 14px;
+  }
+
+  .unequip-button-modal {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+}
+
+/* スマホ横向き専用 */
+@media (max-height: 500px) and (orientation: landscape) {
+  .modal-content {
+    max-height: 85vh;
+    padding: 12px;
+  }
+
+  .memory-card {
+    min-height: 50px;
+    max-height: 50px;
+    padding: 6px;
+    gap: 8px;
+  }
+
+  .memory-character-image,
+  .memory-character-initial {
+    width: 30px;
+    height: 30px;
+  }
+
+  .memory-character-initial {
+    font-size: 0.85rem;
+  }
+
+  .memory-skill-row {
+    font-size: 0.7rem;
+  }
+
+  .modal-header {
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+  }
+
+  .modal-header h3 {
+    font-size: 16px;
+  }
+
+  .close-button {
+    font-size: 24px;
+    width: 28px;
+    height: 28px;
+  }
+
+  .memory-list h4 {
+    margin: 12px 0 6px 0;
+    font-size: 15px;
+  }
+
+  .memory-class-header {
+    margin: 8px 0 6px 0;
+    font-size: 13px;
+  }
 }

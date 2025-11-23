@@ -100,6 +100,70 @@ function MemorySelector({ slot, costume, onSelect, onClose, onUnequip }) {
   const villainMemories = compatibleMemories.filter((m) => m.memory_class === 'VILLAIN');
   const noClassMemories = compatibleMemories.filter((m) => !m.memory_class);
 
+  // キャラクター画像のパスを取得
+  const getCharacterImage = (characterName) => {
+    const baseName = characterName.split('（')[0];
+    return `/images/characters/${baseName}.JPG`;
+  };
+
+  // スキルを2列に分割
+  const getTuningSkills = (memory) => {
+    const skillText = slot.slot_type === 'Normal'
+      ? memory.tuning_skill
+      : memory.special_tuning_skill;
+    return skillText.split('、').map(s => s.trim());
+  };
+
+  // メモリーカードのレンダリング
+  const renderMemoryCard = (memory, isCompatible = true) => {
+    const skills = getTuningSkills(memory);
+    const roleColor = getRoleColor(memory.role);
+
+    // Role色を基に背景色を作成（薄い色）
+    const backgroundColor = isCompatible
+      ? `${roleColor}15` // 15は透明度（約8%）
+      : '#f5f5f5';
+
+    return (
+      <div
+        key={memory.id}
+        className={`memory-card ${isCompatible ? 'compatible' : 'incompatible'}`}
+        style={isCompatible ? {
+          borderColor: roleColor,
+          backgroundColor: backgroundColor
+        } : {}}
+        onClick={isCompatible ? () => onSelect(memory) : undefined}
+      >
+        <div className="memory-character-avatar">
+          <img
+            src={getCharacterImage(memory.character.name)}
+            alt={memory.character.name}
+            className="memory-character-image"
+            onError={(e) => {
+              e.target.style.display = 'none';
+              e.target.nextSibling.style.display = 'flex';
+            }}
+          />
+          <div className="memory-character-initial" style={{ display: 'none' }}>
+            {memory.character.name.charAt(0)}
+          </div>
+        </div>
+        <div className="memory-skills-container">
+          {skills.map((skill, index) => (
+            <div key={index} className="memory-skill-row">
+              {skill}
+            </div>
+          ))}
+        </div>
+        {!isCompatible && (
+          <div className="incompatible-reason">
+            {getIncompatibleReason(memory)}
+          </div>
+        )}
+      </div>
+    );
+  };
+
   if (loading) {
     return (
       <div className="modal-overlay">
@@ -135,77 +199,20 @@ function MemorySelector({ slot, costume, onSelect, onClose, onUnequip }) {
               {heroMemories.length > 0 && (
                 <>
                   <h5 className="memory-class-header">HERO</h5>
-                  {heroMemories.map((memory) => (
-                    <div
-                      key={memory.id}
-                      className="memory-card compatible"
-                      onClick={() => onSelect(memory)}
-                    >
-                      <div className="memory-name">{memory.character.name}</div>
-                      <div className="memory-skills">
-                        {slot.slot_type === 'Normal' ? (
-                          <div className="tuning-skill">
-                            {memory.tuning_skill}
-                          </div>
-                        ) : (
-                          <div className="special-skill">
-                            {memory.special_tuning_skill}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  ))}
+                  {heroMemories.map((memory) => renderMemoryCard(memory, true))}
                 </>
               )}
 
               {villainMemories.length > 0 && (
                 <>
                   <h5 className="memory-class-header">VILLAIN</h5>
-                  {villainMemories.map((memory) => (
-                    <div
-                      key={memory.id}
-                      className="memory-card compatible"
-                      onClick={() => onSelect(memory)}
-                    >
-                      <div className="memory-name">{memory.character.name}</div>
-                      <div className="memory-skills">
-                        {slot.slot_type === 'Normal' ? (
-                          <div className="tuning-skill">
-                            {memory.tuning_skill}
-                          </div>
-                        ) : (
-                          <div className="special-skill">
-                            {memory.special_tuning_skill}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  ))}
+                  {villainMemories.map((memory) => renderMemoryCard(memory, true))}
                 </>
               )}
 
               {noClassMemories.length > 0 && (
                 <>
-                  {noClassMemories.map((memory) => (
-                    <div
-                      key={memory.id}
-                      className="memory-card compatible"
-                      onClick={() => onSelect(memory)}
-                    >
-                      <div className="memory-name">{memory.character.name}</div>
-                      <div className="memory-skills">
-                        {slot.slot_type === 'Normal' ? (
-                          <div className="tuning-skill">
-                            {memory.tuning_skill}
-                          </div>
-                        ) : (
-                          <div className="special-skill">
-                            {memory.special_tuning_skill}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  ))}
+                  {noClassMemories.map((memory) => renderMemoryCard(memory, true))}
                 </>
               )}
             </>
@@ -214,14 +221,7 @@ function MemorySelector({ slot, costume, onSelect, onClose, onUnequip }) {
           {incompatibleMemories.length > 0 && (
             <>
               <h4 className="incompatible-header">装備不可</h4>
-              {incompatibleMemories.map((memory) => (
-                <div key={memory.id} className="memory-card incompatible">
-                  <div className="memory-name">{memory.character.name}</div>
-                  <div className="incompatible-reason">
-                    {getIncompatibleReason(memory)}
-                  </div>
-                </div>
-              ))}
+              {incompatibleMemories.map((memory) => renderMemoryCard(memory, false))}
             </>
           )}
         </div>

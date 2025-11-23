@@ -1,9 +1,10 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { charactersApi, costumesApi } from '../api/client';
+import { charactersApi } from '../api/client';
 import CostumeSelector from '../components/CostumeSelector';
 import SlotDisplay from '../components/SlotDisplay';
 import CostumeOptimizer from '../components/CostumeOptimizer';
+import LoadingSpinner from '../components/LoadingSpinner';
 import './CharacterDetail.css';
 
 function CharacterDetail() {
@@ -14,111 +15,85 @@ function CharacterDetail() {
   const [error, setError] = useState(null);
   const slotDisplayRef = useRef(null);
 
-  useEffect(() => {
-    fetchCharacter();
+  const fetchCharacter = useCallback(async (isMounted) => {
+    try {
+      // パフォーマンス最適化: バリアントを含む統合データを一度に取得
+      // 以前: N回のAPI呼び出し → 現在: 1回のAPI呼び出し
+      const response = await charactersApi.getWithVariants(id);
+      if (!isMounted || !isMounted.current) return; // マウント状態確認
+
+      const unifiedCharacter = response.data;
+
+      if (isMounted && isMounted.current) {
+        setCharacter(unifiedCharacter);
+
+        if (unifiedCharacter.costumes && unifiedCharacter.costumes.length > 0) {
+          // コスチュームにcharacter情報を追加
+          const costumeWithCharacter = {
+            ...unifiedCharacter.costumes[0],
+            character: unifiedCharacter
+          };
+          setSelectedCostume(costumeWithCharacter);
+        }
+        setLoading(false);
+      }
+    } catch (err) {
+      if (isMounted && isMounted.current) {
+        setError('キャラクター情報の読み込みに失敗しました');
+        setLoading(false);
+      }
+    }
   }, [id]);
 
-  const fetchCharacter = async () => {
-    try {
-      // 選択されたキャラクターを取得
-      const response = await charactersApi.getById(id);
-      const selectedCharacter = response.data;
+  useEffect(() => {
+    const isMountedRef = { current: true }; // Refを使用してマウント状態を追跡
 
-      // 全キャラクターを取得
-      const allCharactersResponse = await charactersApi.getAll();
-      const allCharacters = allCharactersResponse.data;
+    fetchCharacter(isMountedRef);
 
-      // 同じベース名を持つキャラクターを全て取得
-      const baseName = selectedCharacter.name.split('（')[0];
-      const sameBaseNameCharacters = allCharacters.filter(char => {
-        const charBaseName = char.name.split('（')[0];
-        return charBaseName === baseName;
-      });
-
-      // 同じベース名のキャラクターの詳細情報を全て取得
-      const detailedCharacters = await Promise.all(
-        sameBaseNameCharacters.map(char => charactersApi.getById(char.id))
-      );
-
-      // コスチュームとメモリーを統合
-      const allCostumes = [];
-      const allMemories = [];
-
-      detailedCharacters.forEach(charResponse => {
-        const char = charResponse.data;
-        if (char.costumes) {
-          allCostumes.push(...char.costumes);
-        }
-        if (char.memory) {
-          if (Array.isArray(char.memory)) {
-            allMemories.push(...char.memory);
-          } else {
-            allMemories.push(char.memory);
-          }
-        }
-      });
-
-      // 統合されたキャラクター情報を作成
-      const unifiedCharacter = {
-        ...selectedCharacter,
-        name: baseName, // ベース名のみ
-        costumes: allCostumes,
-        memory: allMemories
-      };
-
-      setCharacter(unifiedCharacter);
-
-      if (allCostumes.length > 0) {
-        // コスチュームにcharacter情報を追加
-        const costumeWithCharacter = {
-          ...allCostumes[0],
-          character: unifiedCharacter
-        };
-        setSelectedCostume(costumeWithCharacter);
-      }
-      setLoading(false);
-    } catch (err) {
-      setError('キャラクター情報の読み込みに失敗しました');
-      setLoading(false);
-    }
-  };
+    // クリーンアップ関数
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, [fetchCharacter]);
 
   const handleConfigurationApplied = async (costumeId) => {
     // 構成が適用されたら、そのコスチュームの詳細を取得して表示
     try {
-      // キャラクター情報を再取得（統合処理を再実行）
-      await fetchCharacter();
+      // キャラクター全体の情報を再取得
+      const isMountedRef = { current: true };
+      const response = await charactersApi.getWithVariants(id);
+
+      if (!isMountedRef.current) return;
+
+      const unifiedCharacter = response.data;
+      setCharacter(unifiedCharacter);
 
       // 適用されたコスチュームを見つけて選択
-      // fetchCharacterが完了した後に実行
-      setTimeout(() => {
-        setCharacter(prevCharacter => {
-          const appliedCostume = prevCharacter.costumes.find(c => c.id === costumeId);
-          if (appliedCostume) {
-            const costumeWithCharacter = {
-              ...appliedCostume,
-              character: prevCharacter
-            };
-            setSelectedCostume(costumeWithCharacter);
-          }
-          return prevCharacter;
-        });
+      const appliedCostume = unifiedCharacter.costumes.find(c => c.id === costumeId);
+      if (appliedCostume) {
+        const costumeWithCharacter = {
+          ...appliedCostume,
+          character: unifiedCharacter
+        };
+        setSelectedCostume(costumeWithCharacter);
 
         // スロット情報部分にスクロール
-        if (slotDisplayRef.current) {
-          slotDisplayRef.current.scrollIntoView({
-            behavior: 'smooth',
-            block: 'start'
-          });
-        }
-      }, 300);
+        setTimeout(() => {
+          if (slotDisplayRef.current) {
+            slotDisplayRef.current.scrollIntoView({
+              behavior: 'smooth',
+              block: 'start'
+            });
+          }
+        }, 100);
+      }
     } catch (error) {
       console.error('Failed to refresh costume:', error);
     }
   };
 
   if (loading) {
-    return <div className="loading">読み込み中...</div>;
+    return <LoadingSpinner text="キャラクター情報読み込み中" variant={2} />;
   }
 
   if (error) {
@@ -129,13 +104,33 @@ function CharacterDetail() {
     return <div className="error">キャラクターが見つかりません</div>;
   }
 
+  // キャラクター画像のパスを取得
+  const getCharacterImage = (characterName) => {
+    const baseName = characterName.split('（')[0];
+    return `/images/characters/${baseName}.JPG`;
+  };
+
   return (
     <div className="character-detail">
       <Link to="/" className="back-button">
-        ← キャラクター一覧に戻る
+        ← キャラクター選択に戻る
       </Link>
 
       <div className="character-header">
+        <div className="character-avatar">
+          <img
+            src={getCharacterImage(character.name)}
+            alt={character.name}
+            className="character-header-image"
+            onError={(e) => {
+              e.target.style.display = 'none';
+              e.target.nextSibling.style.display = 'flex';
+            }}
+          />
+          <div className="character-header-initial" style={{ display: 'none' }}>
+            {character.name.charAt(0)}
+          </div>
+        </div>
         <h1>{character.name}</h1>
       </div>
 
