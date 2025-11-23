@@ -76,6 +76,7 @@ export const costumesApi = {
 
 export const memoriesApi = {
   getAll: () => apiClient.get('/memories'),
+  getSpecialSkills: () => apiClient.get('/memories/special_skills'),
 };
 
 export const slotsApi = {

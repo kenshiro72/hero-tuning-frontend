@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { charactersApi, costumesApi } from '../api/client';
+import React, { useState, useEffect } from 'react';
+import { charactersApi, costumesApi, memoriesApi } from '../api/client';
 import { getRoleColor } from '../utils/roleColors';
 import './CostumeOptimizer.css';
 
@@ -12,20 +12,27 @@ function CostumeOptimizer({ character, onConfigurationApplied }) {
   const [loading, setLoading] = useState(false);
   const [showResults, setShowResults] = useState(false);
   const [expandedResults, setExpandedResults] = useState({});
+  const [allSpecialSkills, setAllSpecialSkills] = useState([]);
+  const [loadingSpecialSkills, setLoadingSpecialSkills] = useState(true);
 
-  // 全スペシャルスキルリスト
-  const allSpecialSkills = [
-    'GPチウチウ', 'HPチウチウ', 'PUターボ', 'PU火力強化',
-    'アビリティ再現', 'カード複製', 'スペースホップ', 'トランスブロー',
-    'ねじれる跳躍', 'フィクサー', 'マッスルフォーム', 'リベンジアサルト',
-    'リベンジサポート', 'リベンジストライク', 'リベンジテクニカル', 'リベンジラピッド',
-    'ワープヒール', '因子解放', '加速', '完全燃焼', '感知', '危機透過',
-    '疑似透過', '強化蘇生', '撃破PUチャージ', '高速市民救助', '高速自己蘇生',
-    '高速補給', '剛拳', '根性', '姉御肌', '収納マジック', '信仰の加護',
-    '脆化', '戦場分析', '耐焼', '耐電', '耐凍', '帯電付与', '追い風',
-    '特殊リロードブースト', '爆音PUヴォイス', '不倒', '平和の象徴', '壁走り付与',
-    '保護色', '洸汰くん探知'
-  ];
+  // スペシャルスキルリストをAPIから取得
+  useEffect(() => {
+    const fetchSpecialSkills = async () => {
+      try {
+        setLoadingSpecialSkills(true);
+        const response = await memoriesApi.getSpecialSkills();
+        setAllSpecialSkills(response.data.special_skills);
+      } catch (error) {
+        console.error('Failed to fetch special skills:', error);
+        // エラー時は空配列を設定
+        setAllSpecialSkills([]);
+      } finally {
+        setLoadingSpecialSkills(false);
+      }
+    };
+
+    fetchSpecialSkills();
+  }, []);
 
   // 選択中のキャラクターの全メモリーのスペシャルスキルを除外
   const getCharacterMemorySkills = () => {
@@ -55,6 +62,32 @@ function CostumeOptimizer({ character, onConfigurationApplied }) {
   const specialSkills = allSpecialSkills
     .filter(skill => !characterMemorySkills.includes(skill))
     .sort();
+
+  // レアリティに応じたスタイルを取得
+  const getRarityStyle = (rarity) => {
+    if (rarity === 'PUR') {
+      return {
+        background: 'linear-gradient(90deg, #ffb3ba, #ffdfba, #ffffba, #baffc9, #bae1ff, #e0bbff)',
+      };
+    }
+    const getRarityColor = (rarity) => {
+      switch (rarity) {
+        case 'C':
+          return '#808080'; // グレー
+        case 'R':
+          return '#dc3545'; // 赤
+        case 'SR':
+          return '#ffd700'; // 金
+        case 'PUR':
+          return 'linear-gradient(90deg, #ffb3ba, #ffdfba, #ffffba, #baffc9, #bae1ff, #e0bbff)'; // パステル虹
+        default:
+          return '#000';
+      }
+    };
+    return {
+      backgroundColor: getRarityColor(rarity),
+    };
+  };
 
   // CSVの順番通りのスキルリスト
   const skillOrder = [
@@ -322,9 +355,9 @@ function CostumeOptimizer({ character, onConfigurationApplied }) {
                       setSpecialSlotEitherSkill('');
                     }
                   }}
-                  disabled={loading}
+                  disabled={loading || loadingSpecialSkills}
                 >
-                  <option value="">special1</option>
+                  <option value="">{loadingSpecialSkills ? '読み込み中...' : 'special1'}</option>
                   {specialSkills.map((skill) => (
                     <option key={skill} value={skill}>
                       {skill}
@@ -343,9 +376,9 @@ function CostumeOptimizer({ character, onConfigurationApplied }) {
                       setSpecialSlotEitherSkill('');
                     }
                   }}
-                  disabled={loading}
+                  disabled={loading || loadingSpecialSkills}
                 >
-                  <option value="">special2</option>
+                  <option value="">{loadingSpecialSkills ? '読み込み中...' : 'special2'}</option>
                   {specialSkills.map((skill) => (
                     <option key={skill} value={skill}>
                       {skill}
@@ -365,9 +398,9 @@ function CostumeOptimizer({ character, onConfigurationApplied }) {
                       setSpecialSlot2Skill('');
                     }
                   }}
-                  disabled={loading}
+                  disabled={loading || loadingSpecialSkills}
                 >
-                  <option value="">special1or2</option>
+                  <option value="">{loadingSpecialSkills ? '読み込み中...' : 'special1or2'}</option>
                   {specialSkills.map((skill) => (
                     <option key={skill} value={skill}>
                       {skill}
@@ -437,7 +470,12 @@ function CostumeOptimizer({ character, onConfigurationApplied }) {
                   <div key={index} className="result-card">
                     <div className="result-header">
                       <h4>{result.costume_name}</h4>
-                      <span className="result-rarity">{result.rarity}</span>
+                      <div
+                        className="result-rarity"
+                        style={getRarityStyle(result.rarity)}
+                      >
+                        {'★'.repeat(result.star_level || 0)}
+                      </div>
                     </div>
 
                     {/* プリセット対象スキルの効果のみ表示 */}
@@ -456,19 +494,12 @@ function CostumeOptimizer({ character, onConfigurationApplied }) {
                       })}
                     </div>
 
-                    <div className="result-actions">
+                    <div className="result-accordion-header">
                       <button
-                        className="detail-button"
+                        className="accordion-toggle-button"
                         onClick={() => toggleResultDetail(index)}
                       >
-                        {isExpanded ? '閉じる' : '詳細'}
-                      </button>
-                      <button
-                        className="apply-button"
-                        onClick={() => handleApplyConfiguration(result)}
-                        disabled={loading}
-                      >
-                        カスタマイズ
+                        {isExpanded ? '▼ 閉じる' : '▶ 詳細を見る'}
                       </button>
                     </div>
 
@@ -488,6 +519,16 @@ function CostumeOptimizer({ character, onConfigurationApplied }) {
                               </span>
                             </div>
                           ))}
+                        </div>
+
+                        <div className="result-actions-expanded">
+                          <button
+                            className="apply-button"
+                            onClick={() => handleApplyConfiguration(result)}
+                            disabled={loading}
+                          >
+                            カスタマイズ
+                          </button>
                         </div>
                       </div>
                     )}
