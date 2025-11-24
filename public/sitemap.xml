@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <!-- トップページ -->
+  <!-- トップページ（キャラクター一覧） -->
   <url>
     <loc>https://mhaur-tuning-lab.vercel.app/</loc>
     <lastmod>2025-11-24</lastmod>
@@ -8,11 +8,53 @@
     <priority>1.0</priority>
   </url>
 
-  <!-- キャラクター一覧ページ -->
-  <url>
-    <loc>https://mhaur-tuning-lab.vercel.app/characters</loc>
-    <lastmod>2025-11-24</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
-  </url>
+  <!-- キャラクター詳細ページ -->
+  <url><loc>https://mhaur-tuning-lab.vercel.app/characters/289</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://mhaur-tuning-lab.vercel.app/characters/290</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://mhaur-tuning-lab.vercel.app/characters/291</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://mhaur-tuning-lab.vercel.app/characters/292</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://mhaur-tuning-lab.vercel.app/characters/293</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://mhaur-tuning-lab.vercel.app/characters/294</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://mhaur-tuning-lab.vercel.app/characters/295</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://mhaur-tuning-lab.vercel.app/characters/296</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://mhaur-tuning-lab.vercel.app/characters/297</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://mhaur-tuning-lab.vercel.app/characters/298</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://mhaur-tuning-lab.vercel.app/characters/299</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://mhaur-tuning-lab.vercel.app/characters/300</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://mhaur-tuning-lab.vercel.app/characters/301</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://mhaur-tuning-lab.vercel.app/characters/302</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://mhaur-tuning-lab.vercel.app/characters/303</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://mhaur-tuning-lab.vercel.app/characters/304</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://mhaur-tuning-lab.vercel.app/characters/305</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://mhaur-tuning-lab.vercel.app/characters/306</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://mhaur-tuning-lab.vercel.app/characters/307</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://mhaur-tuning-lab.vercel.app/characters/308</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://mhaur-tuning-lab.vercel.app/characters/309</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://mhaur-tuning-lab.vercel.app/characters/310</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://mhaur-tuning-lab.vercel.app/characters/311</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://mhaur-tuning-lab.vercel.app/characters/312</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://mhaur-tuning-lab.vercel.app/characters/313</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://mhaur-tuning-lab.vercel.app/characters/314</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://mhaur-tuning-lab.vercel.app/characters/315</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://mhaur-tuning-lab.vercel.app/characters/316</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://mhaur-tuning-lab.vercel.app/characters/317</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://mhaur-tuning-lab.vercel.app/characters/318</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://mhaur-tuning-lab.vercel.app/characters/319</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://mhaur-tuning-lab.vercel.app/characters/320</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://mhaur-tuning-lab.vercel.app/characters/321</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://mhaur-tuning-lab.vercel.app/characters/322</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://mhaur-tuning-lab.vercel.app/characters/323</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://mhaur-tuning-lab.vercel.app/characters/324</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://mhaur-tuning-lab.vercel.app/characters/325</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://mhaur-tuning-lab.vercel.app/characters/326</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://mhaur-tuning-lab.vercel.app/characters/327</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://mhaur-tuning-lab.vercel.app/characters/328</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://mhaur-tuning-lab.vercel.app/characters/329</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://mhaur-tuning-lab.vercel.app/characters/330</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://mhaur-tuning-lab.vercel.app/characters/331</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://mhaur-tuning-lab.vercel.app/characters/332</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://mhaur-tuning-lab.vercel.app/characters/333</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://mhaur-tuning-lab.vercel.app/characters/334</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://mhaur-tuning-lab.vercel.app/characters/335</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://mhaur-tuning-lab.vercel.app/characters/336</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
 </urlset>
