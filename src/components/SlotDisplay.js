@@ -1,98 +1,67 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { slotsApi, costumesApi } from '../api/client';
+import { costumesApi } from '../api/client';
 import MemorySelector from './MemorySelector';
 import { getRoleColor } from '../utils/roleColors';
 import './SlotDisplay.css';
 
-function SlotDisplay({ costume: initialCostume }) {
-  const [costume, setCostume] = useState(initialCostume);
+function SlotDisplay({ initialCostume, localCostume, onUpdateLocalCostume }) {
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [effects, setEffects] = useState(null);
-  const [loading, setLoading] = useState(false);
 
-  const refreshCostume = useCallback(async (costumeId = null) => {
+  // エフェクト計算（ローカル状態のスロット構成を送信）
+  const calculateEffects = useCallback(async () => {
+    if (!localCostume) return;
+
     try {
-      const targetId = costumeId || costume.id;
-      const response = await costumesApi.getById(targetId);
-      setCostume(response.data);
-      return response.data;
+      // ローカル状態のスロット情報を準備
+      const slotsData = localCostume.slots.map(slot => ({
+        id: slot.id,
+        current_level: slot.current_level,
+        equipped_memory_id: slot.equipped_memory?.id || null
+      }));
+
+      const response = await costumesApi.calculateEffects(localCostume.id, slotsData);
+      setEffects(response.data);
     } catch (error) {
-      console.error('Failed to refresh costume:', error);
-      alert('コスチューム情報の更新に失敗しました');
+      console.error('Failed to calculate effects:', error);
     }
-  }, [costume.id]);
+  }, [localCostume]);
 
-  // 親コンポーネントからcostumeが変更されたときに内部状態を更新
+  // コスチューム変更時の初期化処理
   useEffect(() => {
-    let isMounted = true; // クリーンアップ用フラグ
+    if (!initialCostume || !localCostume) return;
 
-    const initializeCostume = async () => {
-      if (!initialCostume || !isMounted) return;
+    setEffects(null); // 効果表示をリセット
 
-      setCostume(initialCostume);
-      setEffects(null); // 効果表示もリセット
+    // 全スロット（ノーマル＋スペシャル）を最大レベルに設定（ローカル状態のみ）
+    const allSlots = localCostume.slots || [];
+    const needsLevelUp = allSlots.some(slot => slot.current_level < slot.max_level);
 
-      // ノーマルスロットを最大レベルに設定
-      if (initialCostume?.slots) {
-        const normalSlots = initialCostume.slots.filter(slot => slot.slot_type === 'Normal');
-        let needsRefresh = false;
+    if (needsLevelUp) {
+      onUpdateLocalCostume(prevState => {
+        const newState = JSON.parse(JSON.stringify(prevState));
+        newState.slots.forEach(slot => {
+          if (slot.current_level < slot.max_level) {
+            slot.current_level = slot.max_level;
+          }
+        });
+        return newState;
+      });
+    }
+  }, [initialCostume, localCostume, onUpdateLocalCostume]); // initialCostume.idが変わった時のみ実行
 
-        // 並列処理でパフォーマンス向上: Promise.allを使用
-        const levelUpPromises = normalSlots
-          .filter(slot => slot.current_level < slot.max_level)
-          .map(async (slot) => {
-            try {
-              // 一度のAPI呼び出しで最大レベルに設定（パフォーマンス最適化）
-              await slotsApi.setLevel(slot.id, slot.max_level);
-              return true;
-            } catch (error) {
-              console.error('Failed to set slot level:', error);
-              return false;
-            }
-          });
+  // localCostumeが変更されたときに効果を自動計算
+  useEffect(() => {
+    if (!localCostume) return;
 
-        if (levelUpPromises.length > 0) {
-          needsRefresh = true;
-          await Promise.all(levelUpPromises);
-        }
-
-        // スロット情報を更新（新しいコスチュームIDを指定）
-        if (needsRefresh && isMounted) {
-          await refreshCostume(initialCostume.id);
-        }
-
-        // メモリーが装備されている場合、自動的に効果を表示
-        const hasEquippedMemories = initialCostume.slots.some(slot => slot.equipped_memory);
-        if (hasEquippedMemories && isMounted) {
-          // 少し待ってから効果を読み込む（レベル調整が完了するのを待つ）
-          const timeoutId = setTimeout(async () => {
-            if (!isMounted) return; // タイムアウト後もマウント状態を確認
-
-            try {
-              const response = await costumesApi.getEffects(initialCostume.id);
-              if (isMounted) {
-                setEffects(response.data);
-              }
-            } catch (error) {
-              console.error('Failed to load effects:', error);
-            }
-          }, 500);
-
-          // タイムアウトをクリーンアップ用に保存
-          return () => {
-            clearTimeout(timeoutId);
-          };
-        }
-      }
-    };
-
-    initializeCostume();
-
-    // クリーンアップ関数: コンポーネントのアンマウント時に実行
-    return () => {
-      isMounted = false;
-    };
-  }, [initialCostume, refreshCostume]);
+    // メモリーが装備されている場合のみ効果を計算
+    const hasEquippedMemories = localCostume.slots?.some(slot => slot.equipped_memory);
+    if (hasEquippedMemories) {
+      calculateEffects();
+    } else {
+      setEffects(null); // メモリーがない場合は効果をクリア
+    }
+  }, [localCostume, calculateEffects]);
 
   const getClassBadge = (slotClass) => {
     if (!slotClass) return null;
@@ -103,72 +72,63 @@ function SlotDisplay({ costume: initialCostume }) {
     );
   };
 
-  const handleEquipMemory = async (memory) => {
+  // メモリー装備（ローカル状態のみ更新、DB保存なし）
+  const handleEquipMemory = (memory) => {
     if (!selectedSlot) return;
 
-    setLoading(true);
-    try {
-      await slotsApi.equipMemory(selectedSlot.id, memory.id);
-      await refreshCostume();
-      await loadEffects(); // 自動的に効果を再計算
-      setSelectedSlot(null);
-    } catch (error) {
-      console.error('Failed to equip memory:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleUnequipMemory = async (slot) => {
-    setLoading(true);
-    try {
-      await slotsApi.unequipMemory(slot.id);
-      const updatedCostume = await refreshCostume();
-      await loadEffects(); // 自動的に効果を再計算
-      // 装備解除後もモーダルを開いたままにするため、selectedSlotを更新
-      if (updatedCostume && selectedSlot) {
-        const updatedSlot = updatedCostume.slots.find(s => s.id === selectedSlot.id);
-        if (updatedSlot) {
-          setSelectedSlot(updatedSlot);
-        }
+    // ローカル状態を更新（useEffectが自動的に効果を再計算）
+    onUpdateLocalCostume(prevState => {
+      const newState = JSON.parse(JSON.stringify(prevState));
+      const slot = newState.slots.find(s => s.id === selectedSlot.id);
+      if (slot) {
+        slot.equipped_memory = memory;
       }
-    } catch (error) {
-      console.error('Failed to unequip memory:', error);
-    } finally {
-      setLoading(false);
+      return newState;
+    });
+
+    setSelectedSlot(null);
+  };
+
+  // メモリー解除（ローカル状態のみ更新、DB保存なし）
+  const handleUnequipMemory = (slot) => {
+    // ローカル状態を更新（useEffectが自動的に効果を再計算）
+    onUpdateLocalCostume(prevState => {
+      const newState = JSON.parse(JSON.stringify(prevState));
+      const targetSlot = newState.slots.find(s => s.id === slot.id);
+      if (targetSlot) {
+        targetSlot.equipped_memory = null;
+      }
+      return newState;
+    });
+
+    // 装備解除後もモーダルを開いたままにする場合、selectedSlotを更新
+    if (selectedSlot && selectedSlot.id === slot.id) {
+      const updatedSlot = localCostume.slots.find(s => s.id === slot.id);
+      if (updatedSlot) {
+        setSelectedSlot({ ...updatedSlot, equipped_memory: null });
+      }
     }
   };
 
-  const loadEffects = async () => {
-    try {
-      const response = await costumesApi.getEffects(costume.id);
-      setEffects(response.data);
-    } catch (error) {
-      console.error('Failed to load effects:', error);
-      alert('効果の取得に失敗しました');
-    }
+  // 全メモリー解除（ローカル状態のみ更新、DB保存なし）
+  const handleUnequipAll = () => {
+    onUpdateLocalCostume(prevState => {
+      const newState = JSON.parse(JSON.stringify(prevState));
+      newState.slots.forEach(slot => {
+        slot.equipped_memory = null;
+      });
+      return newState;
+    });
+
+    setSelectedSlot(null); // モーダルを閉じる
+    // 効果はuseEffectが自動的にクリア
   };
 
-  const handleUnequipAll = async () => {
-    setLoading(true);
-    try {
-      await costumesApi.unequipAll(costume.id);
-      await refreshCostume();
-      setEffects(null); // 効果表示もクリア
-      setSelectedSlot(null); // モーダルを閉じる
-    } catch (error) {
-      console.error('Failed to unequip all memories:', error);
-      alert('全解除に失敗しました');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const normalSlots = costume.slots
+  const normalSlots = localCostume?.slots
     ?.filter((slot) => slot.slot_type === 'Normal')
     .sort((a, b) => a.slot_number - b.slot_number) || [];
 
-  const specialSlots = costume.slots
+  const specialSlots = localCostume?.slots
     ?.filter((slot) => slot.slot_type === 'Special')
     .sort((a, b) => a.slot_number - b.slot_number) || [];
 
@@ -205,7 +165,7 @@ function SlotDisplay({ costume: initialCostume }) {
           borderColor: roleColor,
           backgroundColor: backgroundColor
         }}
-        onClick={() => !loading && setSelectedSlot(slot)}
+        onClick={() => setSelectedSlot(slot)}
       >
         {getClassBadge(slot.slot_class)}
 
@@ -251,11 +211,10 @@ function SlotDisplay({ costume: initialCostume }) {
   return (
     <div className="slot-display">
       <div className="slot-display-header">
-        <h2>{costume.name}</h2>
+        <h2>{localCostume?.name}</h2>
         <button
           className="unequip-all-button"
           onClick={handleUnequipAll}
-          disabled={loading}
         >
           全て解除
         </button>
@@ -340,7 +299,7 @@ function SlotDisplay({ costume: initialCostume }) {
       {selectedSlot && (
         <MemorySelector
           slot={selectedSlot}
-          costume={costume}
+          localCostume={localCostume}
           onSelect={handleEquipMemory}
           onClose={() => setSelectedSlot(null)}
           onUnequip={handleUnequipMemory}

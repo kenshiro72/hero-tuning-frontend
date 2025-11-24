@@ -3,7 +3,7 @@ import { memoriesApi } from '../api/client';
 import { getRoleColor } from '../utils/roleColors';
 import './MemorySelector.css';
 
-function MemorySelector({ slot, costume, onSelect, onClose, onUnequip }) {
+function MemorySelector({ slot, localCostume, onSelect, onClose, onUnequip }) {
   const [memories, setMemories] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -32,15 +32,15 @@ function MemorySelector({ slot, costume, onSelect, onClose, onUnequip }) {
     }
 
     // 選択しているキャラクター自身のメモリーは装着できない
-    const costumeCharacterBase = costume.character.name.split('（')[0];
+    const costumeCharacterBase = localCostume.character.name.split('（')[0];
     const memoryCharacterBase = memory.character.name.split('（')[0];
     if (costumeCharacterBase === memoryCharacterBase) {
       return false;
     }
 
     // 同じコスチュームに同じメモリーを装着できない
-    const alreadyEquipped = costume.slots.some(
-      (s) => s.id !== slot.id && s.equipped_memory_id === memory.id
+    const alreadyEquipped = localCostume.slots.some(
+      (s) => s.id !== slot.id && s.equipped_memory?.id === memory.id
     );
     if (alreadyEquipped) {
       return false;
@@ -56,7 +56,7 @@ function MemorySelector({ slot, costume, onSelect, onClose, onUnequip }) {
     // Class不一致は表示しない
     if (slot.slot_class && slot.slot_class !== memory.memory_class) return false;
 
-    const costumeCharacterBase = costume.character.name.split('（')[0];
+    const costumeCharacterBase = localCostume.character.name.split('（')[0];
     const memoryCharacterBase = memory.character.name.split('（')[0];
     if (costumeCharacterBase === memoryCharacterBase) return false;
 
@@ -74,14 +74,14 @@ function MemorySelector({ slot, costume, onSelect, onClose, onUnequip }) {
       reasons.push('❌ Class不一致');
     }
 
-    const costumeCharacterBase = costume.character.name.split('（')[0];
+    const costumeCharacterBase = localCostume.character.name.split('（')[0];
     const memoryCharacterBase = memory.character.name.split('（')[0];
     if (costumeCharacterBase === memoryCharacterBase) {
       reasons.push('❌ 自分自身のメモリー');
     }
 
-    const alreadyEquipped = costume.slots.some(
-      (s) => s.id !== slot.id && s.equipped_memory_id === memory.id
+    const alreadyEquipped = localCostume.slots.some(
+      (s) => s.id !== slot.id && s.equipped_memory?.id === memory.id
     );
     if (alreadyEquipped) {
       reasons.push('❌ 既に装備済み');

@@ -61,6 +61,13 @@ export const costumesApi = {
     validateId(id);
     return apiClient.get(`/costumes/${id}/effects`);
   },
+  calculateEffects: (id, slots) => {
+    validateId(id);
+    if (!Array.isArray(slots)) {
+      throw new Error('slots must be an array');
+    }
+    return apiClient.post(`/costumes/${id}/calculate_effects`, { slots });
+  },
   unequipAll: (id) => {
     validateId(id);
     return apiClient.post(`/costumes/${id}/unequip_all`);
@@ -89,20 +96,12 @@ export const slotsApi = {
     validateId(slotId);
     return apiClient.post(`/slots/${slotId}/unequip`);
   },
-  levelUp: (slotId) => {
-    validateId(slotId);
-    return apiClient.post(`/slots/${slotId}/level_up`);
-  },
-  levelDown: (slotId) => {
-    validateId(slotId);
-    return apiClient.post(`/slots/${slotId}/level_down`);
-  },
-  setLevel: (slotId, level) => {
+  setLevel: (slotId, level, config = {}) => {
     validateId(slotId);
     if (!Number.isInteger(level) || level < 1) {
       throw new Error('level must be a positive integer');
     }
-    return apiClient.post(`/slots/${slotId}/set_level`, { level });
+    return apiClient.post(`/slots/${slotId}/set_level`, { level }, config);
   },
 };
 

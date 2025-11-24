@@ -11,6 +11,8 @@ function CharacterDetail() {
   const { id } = useParams();
   const [character, setCharacter] = useState(null);
   const [selectedCostume, setSelectedCostume] = useState(null);
+  // ローカル状態管理: メモリー装備をブラウザ内のみで管理（DB保存なし）
+  const [localCostumeState, setLocalCostumeState] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('easy-tuning'); // 'easy-tuning' or 'manual-selection'
@@ -35,6 +37,9 @@ function CharacterDetail() {
             character: unifiedCharacter
           };
           setSelectedCostume(costumeWithCharacter);
+
+          // ローカル状態を初期化（ディープコピー）
+          setLocalCostumeState(JSON.parse(JSON.stringify(costumeWithCharacter)));
         }
         setLoading(false);
       }
@@ -57,43 +62,60 @@ function CharacterDetail() {
     };
   }, [fetchCharacter]);
 
-  const handleConfigurationApplied = async (costumeId) => {
-    // 構成が適用されたら、そのコスチュームの詳細を取得して表示
-    try {
-      // キャラクター全体の情報を再取得
-      const isMountedRef = { current: true };
-      const response = await charactersApi.getWithVariants(id);
-
-      if (!isMountedRef.current) return;
-
-      const unifiedCharacter = response.data;
-      setCharacter(unifiedCharacter);
-
-      // 適用されたコスチュームを見つけて選択
-      const appliedCostume = unifiedCharacter.costumes.find(c => c.id === costumeId);
-      if (appliedCostume) {
-        const costumeWithCharacter = {
-          ...appliedCostume,
-          character: unifiedCharacter
-        };
-        setSelectedCostume(costumeWithCharacter);
-
-        // タブを手動選択に切り替え
-        setActiveTab('manual-selection');
-
-        // スロット情報部分にスクロール
-        setTimeout(() => {
-          if (slotDisplayRef.current) {
-            slotDisplayRef.current.scrollIntoView({
-              behavior: 'smooth',
-              block: 'start'
-            });
-          }
-        }, 100);
+  // ローカル状態更新関数（子コンポーネントに渡す）
+  const updateLocalCostumeState = useCallback((updater) => {
+    setLocalCostumeState(prevState => {
+      if (typeof updater === 'function') {
+        return updater(prevState);
       }
-    } catch (error) {
-      console.error('Failed to refresh costume:', error);
+      return updater;
+    });
+  }, []);
+
+  const handleConfigurationApplied = (configuration, costumeId) => {
+    if (!character || !character.costumes) return;
+
+    // 検索結果のコスチュームを探す
+    const targetCostume = character.costumes.find(c => c.id === costumeId);
+    if (!targetCostume) {
+      console.error(`Costume not found for id: ${costumeId}`);
+      return;
     }
+
+    // コスチュームにcharacter情報を追加
+    const costumeWithCharacter = {
+      ...targetCostume,
+      character: character
+    };
+
+    // まず、コスチュームを選択
+    setSelectedCostume(costumeWithCharacter);
+
+    // ローカル状態を初期化し、メモリーを装備
+    const newLocalState = JSON.parse(JSON.stringify(costumeWithCharacter));
+
+    // configuration: [{ slot_id, memory_id, memory }, ...]
+    configuration.forEach(({ slot_id, memory }) => {
+      const slot = newLocalState.slots.find(s => s.id === slot_id);
+      if (slot) {
+        slot.equipped_memory = memory;
+      }
+    });
+
+    setLocalCostumeState(newLocalState);
+
+    // タブを手動選択に切り替え
+    setActiveTab('manual-selection');
+
+    // スロット情報部分にスクロール
+    setTimeout(() => {
+      if (slotDisplayRef.current) {
+        slotDisplayRef.current.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start'
+        });
+      }
+    }, 100);
   };
 
   if (loading) {
@@ -177,6 +199,9 @@ function CharacterDetail() {
                   };
                   setSelectedCostume(costumeWithCharacter);
 
+                  // ローカル状態を初期化（ディープコピー）
+                  setLocalCostumeState(JSON.parse(JSON.stringify(costumeWithCharacter)));
+
                   // スロット情報部分にスクロール
                   setTimeout(() => {
                     if (slotDisplayRef.current) {
@@ -190,7 +215,13 @@ function CharacterDetail() {
               />
 
               <div ref={slotDisplayRef}>
-                {selectedCostume && <SlotDisplay costume={selectedCostume} />}
+                {localCostumeState && (
+                  <SlotDisplay
+                    initialCostume={selectedCostume}
+                    localCostume={localCostumeState}
+                    onUpdateLocalCostume={updateLocalCostumeState}
+                  />
+                )}
               </div>
             </>
           )}

@@ -193,25 +193,24 @@ function CostumeOptimizer({ character, onConfigurationApplied }) {
   };
 
   const handleApplyConfiguration = async (result) => {
-    setLoading(true);
-    try {
-      // configuration を { slot_id: memory_id } の形式に変換
-      const configuration = {};
-      result.configuration.forEach(item => {
-        configuration[item.slot_id] = item.memory_id;
-      });
+    // 最適化構成をローカル状態に適用（DB保存なし）
+    // メモリー情報を含む構成を親コンポーネントに渡す
+    if (onConfigurationApplied) {
+      // メモリーオブジェクトを含めた構成データを準備
+      const configuration = result.configuration.map(item => ({
+        slot_id: item.slot_id,
+        memory_id: item.memory_id,
+        memory: {
+          id: item.memory_id,
+          character: { name: item.memory_name },
+          tuning_skill: item.slot_type === 'Normal' ? item.skill : null,
+          special_tuning_skill: item.slot_type === 'Special' ? item.skill : null,
+          role: item.role,
+        }
+      }));
 
-      await costumesApi.applyConfiguration(result.costume_id, configuration);
-
-      // 親コンポーネントに通知
-      if (onConfigurationApplied) {
-        onConfigurationApplied(result.costume_id);
-      }
-    } catch (error) {
-      console.error('Failed to apply configuration:', error);
-      alert('構成の適用に失敗しました');
-    } finally {
-      setLoading(false);
+      // コスチュームIDも渡す
+      onConfigurationApplied(configuration, result.costume_id);
     }
   };
 
