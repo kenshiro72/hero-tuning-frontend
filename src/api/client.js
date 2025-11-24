@@ -7,9 +7,6 @@ const apiClient = axios.create({
   baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
-    // CSRF保護のためのカスタムヘッダー
-    // ブラウザの同一生成元ポリシーにより、他のドメインから設定できない
-    'X-Requested-With': 'XMLHttpRequest',
   },
   // クレデンシャル（Cookie）を含める（将来の認証実装用）
   withCredentials: false, // 現在は認証なし。認証実装時にtrueに変更

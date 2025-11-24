@@ -18,16 +18,18 @@ function CharacterDetail() {
   const [activeTab, setActiveTab] = useState('easy-tuning'); // 'easy-tuning' or 'manual-selection'
   const slotDisplayRef = useRef(null);
 
-  const fetchCharacter = useCallback(async (isMounted) => {
-    try {
-      // パフォーマンス最適化: バリアントを含む統合データを一度に取得
-      // 以前: N回のAPI呼び出し → 現在: 1回のAPI呼び出し
-      const response = await charactersApi.getWithVariants(id);
-      if (!isMounted || !isMounted.current) return; // マウント状態確認
+  useEffect(() => {
+    let isMounted = true;
 
-      const unifiedCharacter = response.data;
+    const loadCharacter = async () => {
+      try {
+        // パフォーマンス最適化: バリアントを含む統合データを一度に取得
+        // 以前: N回のAPI呼び出し → 現在: 1回のAPI呼び出し
+        const response = await charactersApi.getWithVariants(id);
+        if (!isMounted) return; // アンマウント済みなら処理を中断
 
-      if (isMounted && isMounted.current) {
+        const unifiedCharacter = response.data;
+
         setCharacter(unifiedCharacter);
 
         if (unifiedCharacter.costumes && unifiedCharacter.costumes.length > 0) {
@@ -42,25 +44,21 @@ function CharacterDetail() {
           setLocalCostumeState(JSON.parse(JSON.stringify(costumeWithCharacter)));
         }
         setLoading(false);
-      }
-    } catch (err) {
-      if (isMounted && isMounted.current) {
+      } catch (err) {
+        if (!isMounted) return; // アンマウント済みなら処理を中断
+
         setError('キャラクター情報の読み込みに失敗しました');
         setLoading(false);
       }
-    }
-  }, [id]);
+    };
 
-  useEffect(() => {
-    const isMountedRef = { current: true }; // Refを使用してマウント状態を追跡
-
-    fetchCharacter(isMountedRef);
+    loadCharacter();
 
     // クリーンアップ関数
     return () => {
-      isMountedRef.current = false;
+      isMounted = false;
     };
-  }, [fetchCharacter]);
+  }, [id]);
 
   // ローカル状態更新関数（子コンポーネントに渡す）
   const updateLocalCostumeState = useCallback((updater) => {
