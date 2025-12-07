@@ -2,4 +2,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://mhaur-tuning-lab.vercel.app/sitemap.xml
+Sitemap: https://www.mhaur-tuning-lab.com/sitemap.xml
