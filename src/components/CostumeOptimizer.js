@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { charactersApi, costumesApi, memoriesApi } from '../api/client';
+import { charactersApi, memoriesApi } from '../api/client';
 import { getRoleColor } from '../utils/roleColors';
 import './CostumeOptimizer.css';
 
@@ -37,9 +37,6 @@ function CostumeOptimizer({ character, onConfigurationApplied }) {
   // 選択中のキャラクターの全メモリーのスペシャルスキルを除外
   const getCharacterMemorySkills = () => {
     const skills = [];
-
-    // キャラクター名のベース部分を取得（「（」の前）
-    const characterBaseName = character.name.split('（')[0];
 
     // character.memoryが配列の場合
     if (Array.isArray(character.memory)) {
@@ -149,16 +146,6 @@ function CostumeOptimizer({ character, onConfigurationApplied }) {
       if (indexB === -1) return -1;
       return indexA - indexB;
     });
-  };
-
-  const getFilterTypeLabel = (mode) => {
-    switch (mode) {
-      case 'special_1': return 'Special 1のみ';
-      case 'special_2': return 'Special 2のみ';
-      case 'both': return '両方';
-      case 'either': return 'どちらか';
-      default: return '';
-    }
   };
 
   const handleOptimize = async () => {
