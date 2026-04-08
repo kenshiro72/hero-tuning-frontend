@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import { charactersApi } from '../api/client';
 import CostumeSelector from '../components/CostumeSelector';
 import SlotDisplay from '../components/SlotDisplay';
@@ -134,8 +135,18 @@ function CharacterDetail() {
     return `/images/characters/${baseName}.JPG`;
   };
 
+  const baseName = character.name.split('（')[0];
+  const canonicalUrl = `https://www.mhaur-tuning-lab.com/characters/${id}`;
+
   return (
     <div className="character-detail">
+      <Helmet>
+        <title>{`${baseName} | ヒロアカUR T.U.N.I.N.G. 研究所`}</title>
+        <meta name="description" content={`${baseName}のチューニング効果を計算！最強のコスチュームとメモリーの組み合わせを自動で提案します。`} />
+        <link rel="canonical" href={canonicalUrl} />
+        <meta property="og:url" content={canonicalUrl} />
+        <meta property="og:title" content={`${baseName} | ヒロアカUR T.U.N.I.N.G. 研究所`} />
+      </Helmet>
       <Link to="/" className="back-button">
         ← キャラクター選択に戻る
       </Link>
