@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import { charactersApi } from '../api/client';
 import { getRoleColor } from '../utils/roleColors';
 import LoadingSpinner from '../components/LoadingSpinner';
@@ -127,6 +128,13 @@ function CharacterList() {
 
   return (
     <div className="character-list">
+      <Helmet>
+        <title>ヒロアカUR T.U.N.I.N.G. 研究所 | ヒロアカURのチューニング効果を自動計算！</title>
+        <meta name="description" content="僕のヒーローアカデミア ULTRA RUMBLEのチューニング効果を計算！最強のコスチュームとメモリーの組み合わせを自動で提案！" />
+        <link rel="canonical" href="https://www.mhaur-tuning-lab.com/" />
+        <meta property="og:url" content="https://www.mhaur-tuning-lab.com/" />
+        <meta property="og:title" content="ヒロアカUR T.U.N.I.N.G. 研究所 | ヒロアカURのチューニング効果を計算！" />
+      </Helmet>
       <h1>ヒロアカUR T.U.N.I.N.G. 研究所</h1>
 
       <div className="search-section">
